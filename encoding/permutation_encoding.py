@@ -17,16 +17,16 @@ class C:
     corners: dict[str, int] = {
         "URF": 0,
         "UFL": 1,
-        "UBL": 2,
+        "ULB": 2,
         "UBR": 3,
-        "DRF": 4,
+        "DFR": 4,
         "DLF": 5,
         "DBL": 6,
-        "DBR": 7,
+        "DRB": 7,
     }
 
     @staticmethod
-    def get_perm_divmod(perm_index: str) -> int:
+    def get_perm_divmod(perm_index: str) -> list:
         """
         Get permutations of corners of given index, using divmod.
 
@@ -35,17 +35,22 @@ class C:
         :return: returns inverse factoradic form of target permutation index.
         """
 
-        perm = ""
+        factoradic = ""
         variable_base = 0
         while perm_index:
             variable_base += 1
             perm_index, remainder = divmod(perm_index, variable_base)
-            perm += str(remainder)
+            factoradic += str(remainder)
 
-        return int(perm)
+        perm = [0] * 8
+        corner_index = list(range(0, 8))
+        for x in range(len(corner_index) - 1, -1, -1):
+            perm[x] = corner_index.pop(x - int(factoradic[x]))
+
+        return perm
 
     @staticmethod
-    def get_perm(perm_index: str) -> int:
+    def get_perm(perm_index: str) -> list:
         """
         Get permutations of corners of given index.
 
@@ -54,15 +59,40 @@ class C:
         :return: returns inverse factoradic form of target permutation index.
         """
 
-        perm = ""
+        factoradic = ""
         variable_base = 0
         while perm_index:
             variable_base += 1
             remainder = perm_index % variable_base
             perm_index //= variable_base
-            perm += str(remainder)
+            factoradic += str(remainder)
 
-        return int(perm)
+        perm = [0] * 8
+        corner_index = list(range(0, 8))
+        for x in range(len(corner_index) - 1, -1, -1):
+            perm[x] = corner_index.pop(x - int(factoradic[x]))
+
+        return perm
+
+    def get_index(self, permutation: list) -> int:
+        """
+        Get the index number of given permutation
+
+        :speed_test ....: TODO time this function
+        :param permutation: permutation of corners to convert. TODO tidy this up
+        :return: returns index number of given permutation. TODO tidy this up
+        """
+        index = 0
+
+        for p in range(7, 0, -1):
+            higher = 0
+            for corner in permutation[:p]:
+                if self.corners[corner] > self.corners[permutation[p]]:
+                    higher += 1
+
+            index = (index + higher) * p
+
+        return index
 
 
 # The edge permutation is given by an index from 0-479001599 (12! - 1).

@@ -1,0 +1,20 @@
+string of letters describing the position of the facelets.
+Checked for validity
+passed to create face cube representation:
+	string of facelets in number form using the enumerate classes
+face cube then turned to cubie cube(just the blocks):
+	clean cubie cube with (just clean, solved cube)
+    map string onto clean cube
+        loop through corners, checking to see whether any of the facelets match with eiter up or down to determine the orientation of a "indexing" facelet
+        the facelet is then used to check whether that corner is valid - eg has a front, left and upper facelet on it too. before that corner cube's index (not the facelets themselves) is mapped to the permutation replacing the index of the previous cubie (in teh clean cube), along with the orientation of the original "indexing" facelet as a way to measure orientation.
+
+        the same principle is applied to the edges such that each edge has a facelet is checked against the "deafult" and if a facelet does exist, you can then use the "indexing" facelet to determine whether the edge is flipped or not. then mapped onto the clean cubie, replacing the one prior.
+        note that property functions are used to automatically evaluate the parity and permutation/orientation indexs of corners, 8edges and middle 4 edges.
+
+        cubie representation is then returned for verifying it's a valid cube
+            count the number of corner index's present - if there's more than one of each type of index, somthing is wrong.
+            total orientation - must be 0 mod 2 for edges, 0 mod 3 for corners
+            edge parity and corner parity must be the same too
+
+START OF SEARCH:
+...................
