@@ -1,17 +1,24 @@
-import pprint
+from initialising.cubes import cubiecube, facelet_cube
+from definitions.moves import *
+from GUI.pygame_draw_cube import draw
 
-perm_index = 21021
-factoradic = ""
-variable_base = 0
-while perm_index:
-    variable_base += 1
-    remainder = perm_index % variable_base
-    perm_index //= variable_base
-    factoradic += str(remainder)
+string_def = "UUU UUU UUU BLF RRR RRR LRL LLL LLL FFR FFF FFF RBB BBB BBB DDD DDD DDD".replace(" ", "")
+fc = facelet_cube(string_def)
+cc = fc.to_cubeie_cube()
+moves = [Umove,
+         Rmove,
+         Lmove,
+         Dmove,
+         Fmove,
+         Bmove]
 
-perm = [0] * 8
-corner_index = list(range(0, 8))
-for x in range(len(corner_index) - 1, -1, -1):
-    perm[x] = corner_index.pop(x - int(factoradic[x]))
+def move(cc, axis, moves_power):
+    for i, move in enumerate(axis):
+        if move == -1:
+            continue
+        for power in range(moves_power[i]):
+            cc.MOVE(moves[move])
 
-print(perm)
+move(cc, [0, 4, 0, 4, 3, 1, 5, 0, 5, 3, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [1, 2, 3, 2, 1, 2, 2, 1, 2, 3, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+
+draw(cc.to_facelet_cube())

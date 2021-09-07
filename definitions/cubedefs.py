@@ -2,8 +2,6 @@ from enum import IntEnum, Enum
 from typing import List, Tuple, Union, Any
 
 
-
-
 class colours(IntEnum):
     U = 0
     R = 1
@@ -11,6 +9,8 @@ class colours(IntEnum):
     F = 3
     B = 4
     D = 5
+
+facelet_to_col = ["U", "R", "L", "F", "B", "D", "X"]
 
 
 class facelet_index(IntEnum):
@@ -73,6 +73,36 @@ class facelet_index(IntEnum):
     D8 = 53
 
 
+class urf_facelet_index(IntEnum):
+    U0 = 0
+    U1 = 1
+    U2 = 2
+    U3 = 3
+    U4 = 4
+    U5 = 5
+    U6 = 6
+    U7 = 7
+    U8 = 8
+    R0 = 9
+    R1 = 10
+    R2 = 11
+    R3 = 12
+    R4 = 13
+    R5 = 14
+    R6 = 15
+    R7 = 16
+    R8 = 17
+    F0 = 27
+    F1 = 28
+    F2 = 29
+    F3 = 30
+    F4 = 31
+    F5 = 32
+    F6 = 33
+    F7 = 34
+    F8 = 35
+
+
 class corner_index(IntEnum):
     URF = 0
     UFL = 1
@@ -98,8 +128,8 @@ class edge_index(IntEnum):
 
     FR = 8
     FL = 9
-    BR = 10
-    BL = 11
+    BL = 10
+    BR = 11
 
 
 corner_facelet_index: list[tuple[facelet_index, facelet_index, facelet_index]] = [
@@ -126,8 +156,8 @@ edge_facelet_index: list[Union[tuple[facelet_index, facelet_index], Any]] = [
 
     (facelet_index.F5, facelet_index.R3),
     (facelet_index.F3, facelet_index.L5),
-    (facelet_index.B3, facelet_index.R5),
-    (facelet_index.B5, facelet_index.L3)]
+    (facelet_index.B5, facelet_index.L3),
+    (facelet_index.B3, facelet_index.R5)]
 
 corner_colours = [
     (colours.U, colours.R, colours.F)
@@ -153,5 +183,13 @@ edge_colours = [
 
     , (colours.F, colours.R)
     , (colours.F, colours.L)
-    , (colours.B, colours.R)
-    , (colours.B, colours.L)]
+    , (colours.B, colours.L)
+    , (colours.B, colours.R)]
+
+rcolours = ["White",
+            "Green",
+            "Red",
+            "Orange",
+            "Yellow",
+            "Blue"]
+
