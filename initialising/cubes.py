@@ -112,8 +112,7 @@ class cubiecube:
             for e in range(2):
                 fc.f[edge_facelet_index[edge][(self.eo[edge] + e) % 2]] = edge_colours[self.ep[edge]][e]
 
-        for _, col in enumerate(fc.f):
-            fc.f[_] = facelet_to_col[col]
+        fc.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in enumerate(fc.f)]
 
         return "".join(fc.f)
 

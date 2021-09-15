@@ -180,7 +180,7 @@ class cube():
                                 self.size, self.size)
         # self.rect = pygame.Rect(20, 20,
         #                         self.size, self.size)
-        resources = r"D:\Files\NEA\NEA-main (1)\NEA-main\GUI\lib"
+        resources = r"C:\Programming\NEA\GUI\lib"
 
         self.top, self.left, self.right = load(resources)
 
