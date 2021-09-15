@@ -11,7 +11,7 @@ class facelet_cube:
 
         if string_definition:
             for i, c in enumerate(string_definition):
-                self.f[i] = colours[c]
+                self.f[i] = axes[c]
 
             self.verify()
             pass
@@ -21,8 +21,8 @@ class facelet_cube:
 
     def verify(self):
         # quantity of facelets
-        count = [0] * len(colours)
-        for i, c in enumerate(colours):
+        count = [0] * len(axes)
+        for i, c in enumerate(axes):
             count[i] = self.f.count(c)
 
         for c in count:
@@ -32,18 +32,18 @@ class facelet_cube:
     @property
     def corners(self):
         s = self.f
-        corners = [0] * len(corner_index)
+        corners = [0] * len(corner_indices)
         for i in range(len(corners)):
-            corners[i] = tuple(s[f] for f in corner_facelet_index[i])
+            corners[i] = tuple(s[f] for f in corner_facelet_indices[i])
 
         return corners
 
     @property
     def edges(self):
         s = self.f
-        edges = [0] * len(edge_index)
+        edges = [0] * len(edge_indices)
         for i in range(len(edges)):
-            edges[i] = tuple(s[f] for f in edge_facelet_index[i])
+            edges[i] = tuple(s[f] for f in edge_facelet_indices[i])
 
         return edges
 
@@ -61,7 +61,7 @@ class facelet_cube:
             f1 = corner[(o + 1) % 3]
             f2 = corner[(o + 2) % 3]
 
-            for j, c in enumerate(corner_colours):
+            for j, c in enumerate(corner_axes):
                 if f1 == c[1] and f2 == c[2]:
                     co[i] = o
                     cp[i] = j
@@ -71,7 +71,7 @@ class facelet_cube:
         ep = [0] * 12
 
         for t, edge in enumerate(self.edges):
-            for k, cols in enumerate(edge_colours):
+            for k, cols in enumerate(edge_axes):
 
                 if edge == cols:
                     eo[t] = 0
@@ -104,13 +104,13 @@ class cubiecube:
     def to_facelet_cube(self):
         fc = facelet_cube()
 
-        for corner in corner_index:
+        for corner in corner_indices:
             for f in range(3):
-                fc.f[corner_facelet_index[corner][(self.co[corner] + f) % 3]] = corner_colours[self.cp[corner]][f]
+                fc.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]
 
-        for edge in edge_index:
+        for edge in edge_indices:
             for e in range(2):
-                fc.f[edge_facelet_index[edge][(self.eo[edge] + e) % 2]] = edge_colours[self.ep[edge]][e]
+                fc.f[edge_facelet_indices[edge][(self.eo[edge] + e) % 2]] = edge_axes[self.ep[edge]][e]
 
         fc.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in enumerate(fc.f)]
 

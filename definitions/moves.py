@@ -1,4 +1,4 @@
-from definitions.cubedefs import corner_index as c, edge_index as e
+from definitions.cubedefs import corner_indices as c, edge_indices as e
 from initialising.cubes import cubiecube
 
 cpU = [c.UBR, c.URF, c.UFL, c.ULB, c.DFR, c.DLF, c.DBL, c.DRB]

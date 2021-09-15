@@ -5,7 +5,7 @@ from pygame.locals import *
 import os
 from GUI.pygame_facelets import load
 from initialising.cubes import cubiecube
-from definitions.cubedefs import urf_facelet_index
+from definitions.cubedefs import urf_facelet_indices
 
 screen_width = 1920
 screen_height = 1080
@@ -185,7 +185,7 @@ class cube():
         self.top, self.left, self.right = load(resources)
 
     def get_urf(self):
-        return self.set_colours("".join([self.string[c] for c in urf_facelet_index]))
+        return self.set_colours("".join([self.string[c] for c in urf_facelet_indices]))
 
     def set_colours(self, raw):
         for i, face in enumerate(self.sides):

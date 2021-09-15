@@ -1,8 +1,8 @@
-from enum import IntEnum, Enum
-from typing import List, Tuple, Union, Any
+from enum import IntEnum
+from typing import Union, Any
 
 
-class colours(IntEnum):
+class axes(IntEnum):
     U = 0
     R = 1
     L = 2
@@ -10,13 +10,11 @@ class colours(IntEnum):
     B = 4
     D = 5
 
+
 facelet_to_col = ["U", "R", "L", "F", "B", "D", "X"]
 
 
-class facelet_index(IntEnum):
-    """
-    facelet values for whole cube, used to reference the posisition in cube defintion string to find particular facelet_index
-    """
+class facelet_indices(IntEnum):
     U0 = 0
     U1 = 1
     U2 = 2
@@ -73,7 +71,7 @@ class facelet_index(IntEnum):
     D8 = 53
 
 
-class urf_facelet_index(IntEnum):
+class urf_facelet_indices(IntEnum):
     U0 = 0
     U1 = 1
     U2 = 2
@@ -103,7 +101,7 @@ class urf_facelet_index(IntEnum):
     F8 = 35
 
 
-class corner_index(IntEnum):
+class corner_indices(IntEnum):
     URF = 0
     UFL = 1
     ULB = 2
@@ -115,7 +113,7 @@ class corner_index(IntEnum):
     DRB = 7
 
 
-class edge_index(IntEnum):
+class edge_indices(IntEnum):
     UR = 0
     UF = 1
     UL = 2
@@ -132,64 +130,63 @@ class edge_index(IntEnum):
     BR = 11
 
 
-corner_facelet_index: list[tuple[facelet_index, facelet_index, facelet_index]] = [
-    (facelet_index.U8, facelet_index.R0, facelet_index.F2),
-    (facelet_index.U6, facelet_index.F0, facelet_index.L2),
-    (facelet_index.U0, facelet_index.L0, facelet_index.B2),
-    (facelet_index.U2, facelet_index.B0, facelet_index.R2),
-    (facelet_index.D2, facelet_index.F8, facelet_index.R6),
-    (facelet_index.D0, facelet_index.L8, facelet_index.F6),
-    (facelet_index.D6, facelet_index.B8, facelet_index.L6),
-    (facelet_index.D8, facelet_index.R8, facelet_index.B6)]
+corner_facelet_indices: list[tuple[facelet_indices, facelet_indices, facelet_indices]] = [
+    (facelet_indices.U8, facelet_indices.R0, facelet_indices.F2),
+    (facelet_indices.U6, facelet_indices.F0, facelet_indices.L2),
+    (facelet_indices.U0, facelet_indices.L0, facelet_indices.B2),
+    (facelet_indices.U2, facelet_indices.B0, facelet_indices.R2),
+    (facelet_indices.D2, facelet_indices.F8, facelet_indices.R6),
+    (facelet_indices.D0, facelet_indices.L8, facelet_indices.F6),
+    (facelet_indices.D6, facelet_indices.B8, facelet_indices.L6),
+    (facelet_indices.D8, facelet_indices.R8, facelet_indices.B6)]
 
-edge_facelet_index: list[Union[tuple[facelet_index, facelet_index], Any]] = [
+edge_facelet_indices: list[Union[tuple[facelet_indices, facelet_indices], Any]] = [
 
-    (facelet_index.U5, facelet_index.R1),
-    (facelet_index.U7, facelet_index.F1),
-    (facelet_index.U3, facelet_index.L1),
-    (facelet_index.U1, facelet_index.B1),
+    (facelet_indices.U5, facelet_indices.R1),
+    (facelet_indices.U7, facelet_indices.F1),
+    (facelet_indices.U3, facelet_indices.L1),
+    (facelet_indices.U1, facelet_indices.B1),
 
-    (facelet_index.D5, facelet_index.R7),
-    (facelet_index.D1, facelet_index.F7),
-    (facelet_index.D3, facelet_index.L7),
-    (facelet_index.D7, facelet_index.B7),
+    (facelet_indices.D5, facelet_indices.R7),
+    (facelet_indices.D1, facelet_indices.F7),
+    (facelet_indices.D3, facelet_indices.L7),
+    (facelet_indices.D7, facelet_indices.B7),
 
-    (facelet_index.F5, facelet_index.R3),
-    (facelet_index.F3, facelet_index.L5),
-    (facelet_index.B5, facelet_index.L3),
-    (facelet_index.B3, facelet_index.R5)]
+    (facelet_indices.F5, facelet_indices.R3),
+    (facelet_indices.F3, facelet_indices.L5),
+    (facelet_indices.B5, facelet_indices.L3),
+    (facelet_indices.B3, facelet_indices.R5)]
 
-corner_colours = [
-    (colours.U, colours.R, colours.F)
-    , (colours.U, colours.F, colours.L)
-    , (colours.U, colours.L, colours.B)
-    , (colours.U, colours.B, colours.R)
+corner_axes = [
+    (axes.U, axes.R, axes.F),
+    (axes.U, axes.F, axes.L),
+    (axes.U, axes.L, axes.B),
+    (axes.U, axes.B, axes.R),
 
-    , (colours.D, colours.F, colours.R)
-    , (colours.D, colours.L, colours.F)
-    , (colours.D, colours.B, colours.L)
-    , (colours.D, colours.R, colours.B)]
+    (axes.D, axes.F, axes.R),
+    (axes.D, axes.L, axes.F),
+    (axes.D, axes.B, axes.L),
+    (axes.D, axes.R, axes.B)]
 
-edge_colours = [
-    (colours.U, colours.R)
-    , (colours.U, colours.F)
-    , (colours.U, colours.L)
-    , (colours.U, colours.B)
+edge_axes = [
+    (axes.U, axes.R),
+    (axes.U, axes.F),
+    (axes.U, axes.L),
+    (axes.U, axes.B),
 
-    , (colours.D, colours.R)
-    , (colours.D, colours.F)
-    , (colours.D, colours.L)
-    , (colours.D, colours.B)
+    (axes.D, axes.R),
+    (axes.D, axes.F),
+    (axes.D, axes.L),
+    (axes.D, axes.B),
 
-    , (colours.F, colours.R)
-    , (colours.F, colours.L)
-    , (colours.B, colours.L)
-    , (colours.B, colours.R)]
+    (axes.F, axes.R),
+    (axes.F, axes.L),
+    (axes.B, axes.L),
+    (axes.B, axes.R)]
 
-rcolours = ["White",
-            "Green",
-            "Red",
-            "Orange",
-            "Yellow",
-            "Blue"]
-
+raw_colours = ["White",
+               "Green",
+               "Red",
+               "Orange",
+               "Yellow",
+               "Blue"]

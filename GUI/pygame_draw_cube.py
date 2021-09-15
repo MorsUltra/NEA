@@ -1,7 +1,7 @@
 import pygame, sys
 from pygame.locals import *
 from .pygame_facelets import load
-from definitions.cubedefs import urf_facelet_index, rcolours
+from definitions.cubedefs import urf_facelet_indices, raw_colours
 
 resources = r"C:\Users\olive\Desktop\NEA\GUI\lib"
 
@@ -16,9 +16,9 @@ top, left, right = load(resources)
 
 def set_colours(raw: str, d = False):
     raw = raw.replace(" ", "")
-    raw = "".join([raw[c] for c in urf_facelet_index])
+    raw = "".join([raw[c] for c in urf_facelet_indices])
 
-    cols = rcolours[:]
+    cols = raw_colours[:]
     sides = ["U", "F", "R", "L", "D", "B"]
     if d:
         for i, face in enumerate(sides):
