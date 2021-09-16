@@ -76,24 +76,85 @@ def Oedge_coords(self, index):
 ```
 
 ### The UD-slice coordinate
-e
+The UD-slice coordinate uses a different encoding method altogether. At this point in the algorithm, the only nessessary data is **where** the UD-slice edges are, and not how they are rotated or where they are each positioned.
 
-e
+There are 4 edges, each of which can exist in one of 12 edges and it follow that the coordinate has range `2*11*10*9/4! - 1 = 494`.
 
-e
+The algoritm uses an array to represent each elelent in the UD-slice co-set much as the other methods of encoding expalined above, however assignes each of the elements in said array with a weight correspoding to their position `0, 1... 10, 11` and works from right to left: 
 
+The number of UD-slice edges seen at the beginning of the algorithm is `4 - 1=3` such that `C(weight, seen_edges)` calculates the set of combinations of the remaining edges in the remaining spaces. This only works as all UD-slice edges are consiered homogenous here, so they are completely interchangable with one another. 
 
-e
+The algorihtm maps each element to an index on a 1 to 1 basis, and the identity elemnent is 0 here also, representing when the UD-slice edges are all stacked in final 4 positions in the array. Intuitively this means that they are all present in the UD-slice, but not necessarily in the right position nor orientation for the cube to be consiered solved. When the order of the edges are defined, the UD-slice edges are defined last, such that this method of encoding is applicable:
 
+```
+class edge_indices(IntEnum):
+    UR = 0
+    UF = 1
+    UL = 2
+    UB = 3
 
-e
+    DR = 4
+    DF = 5
+    DL = 6
+    DB = 7
 
+    FR = 8
+    FL = 9
+    BL = 10
+    BR = 11
+```
 
-e
+The above describes the following algorithm: 
+```
+@property
+def POSud_slice_coords(self):  # working
+    blank = [False] * 12
+    for i, corner in enumerate(self.ep):
+        if corner >= 8:
+            blank[i] = True
 
+    coord = 0
+    count = 3
 
-e
+    for i in range(11, -1, -1):
+        if count < 0:
+            break
 
+        if blank[i]:
+            count -= 1
+        else:
+            coord += CNK(i, count)
+
+    return coord
+```
+And the following reverses the above, returning an array for the edge permutation that uses each edge indiscriminatnely, only ensuring that each UD-slice edge is placed correctly such that it can be mapped back to the same index of the co-set:
+
+```
+@POSud_slice_coords.setter
+def POSud_slice_coords(self, index):  # working
+    count = 3
+    self.ep = [False] * 12
+
+    for i in range(11, -1, -1):
+        if count < 0:
+            break
+
+        v = CNK(i, count)
+
+        if index < v:
+            # noinspection PyTypeChecker
+            self.ep[i] = 8 + count
+            count -= 1
+        else:
+            index -= v
+
+    others = 0
+    for i, edge in enumerate(self.ep):
+        if not edge:
+            # noinspection PyTypeChecker
+            self.ep[i] = others
+            others += 1
+```
 
 
 ## Facelet level
