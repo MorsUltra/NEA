@@ -156,6 +156,9 @@ def POSud_slice_coords(self, index):  # working
             others += 1
 ```
 
+The first phase of the algorithm combines all three of these coordinates, first calculating the coordinates of the cube provided by the user, before searching simultainiously through each one of those co-sets to find a sequence of any moves that take each of the coorindates to (0). 
+
+It is worth noting that the first group's group operations (the moves) are not limited here as they are elsewhere in the algorithm, so for each and every element there are 18 operations that will take you to another element in in the group. Whilst searching however, the same move is not allowed to be applied consequentively as this is simply synoymous with another move that is considered a singular move instead of two. The search algorithm also prevents 
 
 ## Facelet level
 The cube must first be defined by a 1d string of characters that represent the colours of each of the 54 faceltes present on the cube.
