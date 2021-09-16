@@ -300,28 +300,220 @@ Phase two of the solver uses those 3 coordinates to find a sequence of moves tha
 
 
 # Data structures
- 
+
 
 ## Facelet level
-The cube must first be defined by a 1d string of characters that represent the colours of each of the 54 facelets present on the cube.
+The cube must first be defined by a 1d string of characters that represent the colours of each of the 54 facelets present on the cube. This format is easiest to display in GUI's so will be trasitioned to when passing information to and from the solver.
 
-They are numbered from **top-down from left to right**, in the order of *axis* as defined here:
+The faclets are numbered from **top-down from left to right**, and *axis* are defined in order below:
+
+Note that the **IntEnum** module is used to allow the program to allow for the axis to be treated as integers, as well as providing some functional utility for debugging later as it's much easier to comprehend the axis `u` as opposed to the integer `0`.
 
 ```python
 class colours(IntEnum):
-    U = 0
-    R = 1
-    L = 2
-    F = 3
-    B = 4
-    D = 5
+U = 0
+R = 1
+L = 2
+F = 3
+B = 4
+D = 5
 ```
-Note that the *IntEnum* module is used to allow the program to allow for the axis to be treated as integers, as well as providing some functional utility for debugging later as it's much easier to comprehend the "U" axis as opposed to the integer 0.
 
-The facelet level definition is a string of length 54 composed of the characters featured in `colours`. It's worth noting that whilst the cube itself is relative, the axes are constant.
+```python
+class facelet_indices(IntEnum):
+U0 = 0
+U1 = 1
+U2 = 2
+U3 = 3
+U4 = 4
+U5 = 5
+U6 = 6
+U7 = 7
+U8 = 8
+R0 = 9
+R1 = 10
+R2 = 11
+R3 = 12
+R4 = 13
+R5 = 14
+R6 = 15
+R7 = 16
+R8 = 17
+L0 = 18
+L1 = 19
+L2 = 20
+L3 = 21
+L4 = 22
+L5 = 23
+L6 = 24
+L7 = 25
+L8 = 26
+F0 = 27
+F1 = 28
+F2 = 29
+F3 = 30
+F4 = 31
+F5 = 32
+F6 = 33
+F7 = 34
+F8 = 35
+B0 = 36
+B1 = 37
+B2 = 38
+B3 = 39
+B4 = 40
+B5 = 41
+B6 = 42
+B7 = 43
+B8 = 44
+D0 = 45
+D1 = 46
+D2 = 47
+D3 = 48
+D4 = 49
+D5 = 50
+D6 = 51
+D7 = 52
+D8 = 53
+```
 
-A solved cube in facelet defintion will look like this: 
+Each character in the string coresponds to a faclet on the cube, as is defined in the above fashion.
+
+A solved cube in facelet defintion will look like this:
 ```
 UUUUUUUUURRRRRRRRRLLLLLLLLLFFFFFFFFFBBBBBBBBBDDDDDDDDD
 ```
-This is the *identity* definition
+This is the **identity** cube defined in terms of its facelets.
+
+To convert from this format to the next level, the coordinate level, we must identify which of the defined pieces correspond to the pieces in the string. 
+
+For simplicity’s sake it's best we only look at the way the corners are calculated but the edges are established in a similar process:
+
+The cube has 8 defined corner positions, each of which with its own integer value.
+```python
+class corner_indices(IntEnum):
+    URF = 0
+    UFL = 1
+    ULB = 2
+    UBR = 3
+    
+    DFR = 4
+    DLF = 5
+    DBL = 6
+    DRB = 7
+```
+
+```python
+corner_facelet_indices: list[tuple[facelet_indices, facelet_indices, facelet_indices]] = [
+    (facelet_indices.U8, facelet_indices.R0, facelet_indices.F2),
+    (facelet_indices.U6, facelet_indices.F0, facelet_indices.L2),
+    (facelet_indices.U0, facelet_indices.L0, facelet_indices.B2),
+    (facelet_indices.U2, facelet_indices.B0, facelet_indices.R2),
+    (facelet_indices.D2, facelet_indices.F8, facelet_indices.R6),
+    (facelet_indices.D0, facelet_indices.L8, facelet_indices.F6),
+    (facelet_indices.D6, facelet_indices.B8, facelet_indices.L6),
+    (facelet_indices.D8, facelet_indices.R8, facelet_indices.B6)]
+```
+We are therefore about to define each corner `URF --> 0` by the index of the facelets `(facelet_indices.U8, facelet_indices.R0, facelet_indices.F2)`it represents in it's facelet definition.
+
+This is of course under the premise that the cube is static so the facelets that compose each one of those positions occupies will not change.
+
+When given a string and asked to work out the corner permutation in the form of an array therefore, we might loop through each of the defined corners, looking up which indices in the string represent said corner, and checking to see which of the defined corners those facelets represent. For this, we are able to define the corners in terms of what axes they are composed of in clockwise order: 
+```python
+corner_axes = [
+    (axes.U, axes.R, axes.F),
+    (axes.U, axes.F, axes.L),
+    (axes.U, axes.L, axes.B),
+    (axes.U, axes.B, axes.R),
+
+    (axes.D, axes.F, axes.R),
+    (axes.D, axes.L, axes.F),
+    (axes.D, axes.B, axes.L),
+    (axes.D, axes.R, axes.B)]
+```
+
+
+### The algorithm: 
+```python
+def to_cubeie_cube(self):
+    co = [0] * 8
+    cp = [0] * 8
+    for i, corner in enumerate(self.corners):
+        for o, f in enumerate(corner):
+            if f == 0 or f == 5:
+                break
+
+        f1 = corner[(o + 1) % 3]
+        f2 = corner[(o + 2) % 3]
+
+        for j, c in enumerate(corner_axes):
+            if f1 == c[1] and f2 == c[2]:
+                co[i] = o
+                cp[i] = j
+                break
+
+    eo = [0] * 12
+    ep = [0] * 12
+
+    for t, edge in enumerate(self.edges):
+        for k, cols in enumerate(edge_axes):
+
+            if edge == cols:
+                eo[t] = 0
+                ep[t] = k
+
+            elif edge[0] == cols[1] and edge[1] == cols[0]:
+                eo[t] = 1
+                ep[t] = k
+
+    cc = cubiecube(cp, co, ep, eo)
+
+    return cc
+```
+When implimenting the apoproach described prior, it's quicker to establish both the identity of the corner and the orientation of it simultainously:
+
+```python
+def to_cubeie_cube(self):
+    co = [0] * 8
+    cp = [0] * 8
+```
+Create blanks for both the corner permtuation and the corner orientation
+```python
+    for i, corner in enumerate(self.corners):
+```
+Loop through the corners in the string provided, obtaining each by referencing the indicies of each corners position.
+```python
+        for o, f in enumerate(corner):
+```
+Loop through each of the facelets `f` in the corner, keeping track of how many clockwise rotations `o` it takes to get to that facelet from the first - that which represents a neutral orientation
+```python
+            if f == 0 or f == 5:
+                break
+```
+Check to see whether the facelet belongs to either the up or the down face - the faces which correspond to neutral. 
+```python
+        f1 = corner[(o + 1) % 3]
+        f2 = corner[(o + 2) % 3]
+```
+Get the other facelets present on the corner in a clockwise manner indexing from the neutral facelet we found above. 
+```python
+        for j, c in enumerate(corner_axes):
+```
+Loop through each of the corners we defined in terms of their axes.
+```python
+            if f1 == c[1] and f2 == c[2]:
+                co[i] = o
+                cp[i] = j
+                break
+```
+Check whether this combination of facelets, in this order, exists before settings both the corner orientation and permutation in the blank defined above. 
+
+The loop repeats until every corner has been checked, before a similar process is executed for the edges. 
+
+This process allows us to take a facelet definition and elevate it to a higher data structure for easier manipulation - the cubie cube.
+
+## Cubie level
+
+Cubie movement and move application
+
+## Coordinate level 
