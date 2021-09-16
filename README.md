@@ -514,6 +514,54 @@ This process allows us to take a facelet definition and elevate it to a higher d
 
 ## Cubie level
 
-Cubie movement and move application
+At this level, the cube can be represented by 4 arrays. 
+
+A solved cube: 
+```python
+edge_orientation = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+edge_permutation = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+corner_orientation = [0, 0, 0, 0, 0, 0, 0, 0]
+corner_permutation = [0, 1, 2, 3, 4, 5, 6, 7]
+```
+
+Whilst these arrays can more compactly be stored and searched through with correspoding numbers using the encoding system described intially, it's impossible to foresee how a move can effect a coordinate. It follows that we apply moves onto the cube at this level where pieces are distinct maleable. 
+
+The moves are defined using a **repalced by** notation, for example a single clockwise rotation of the right face: 
+
+```python
+cpR = [c.DFR, c.UFL, c.ULB, c.URF, c.DRB, c.DLF, c.DBL, c.UBR]
+coR = [2, 0, 0, 1, 1, 0, 0, 2]
+epR = [e.FR, e.UF, e.UL, e.UB, e.BR, e.DF, e.DL, e.DB, e.DR, e.FL, e.BL, e.UR]
+eoR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+```
+
+Let's look first at the permutation of the corners `cpR`: 
+
+Note that a default array will be such, where each of the corners describes the position in the cube: 
+
+```python 
+cp = [c.URF, c.UFL, c.ULB, c.UBR, c.DLF, c.DBL, c.DRB, c.DFR]
+```
+
+The first corner in `cpR[0] --> c.DFR` refers to piece, or the position of the piece, that will replace the cubie present at that position in the array.
+
+In other words, the corner in the position `up-right-front` will be replaced by the piece present at `down-front-right` under the move of a single turn of the right face.
+
+We are not removing or adding corners to the permutation, we are simply exchanging them with one another. 
+
+When manipulating the corners and applying a move to the whole of the permutation, it follows that we simply apply the same rule.
+
+```python
+def Cmove(self, to_apply):
+    self.cp = [self.cp[to_apply.cp[i]] for i in range(8)]
+    self.co = [(self.co[to_apply.cp[i]] + to_apply.co[i]) % 3 for i in range(8)]
+```
+
+
+Intuitively this translates to the following prodcedure: 
+
+1. Loop through each of the elements `i` in the definition of the move being applied, getting the position of the corner that replaces the current.
+2. Using the nature of position - an integer value - to index the current permtuation and replace the corner at each `i`.
 
 ## Coordinate level 
