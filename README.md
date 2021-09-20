@@ -583,4 +583,4 @@ At the coordinate level, all cubes within H simultainiously have a corner orient
 
 `H = (C ∩ E ∩ UD), C = {g: g ∈ G, g.corner_orientation = 0}, E = {g: g ∈ G, g.edge_orientation = 0}, UD = {g: g ∈ G, g.UDslice_position = 0}`
 
-Theoretically, 
+If the cardinality of G is `|G| = 43252003274489856000`, then it reasons that
