@@ -583,4 +583,16 @@ At the coordinate level, all cubes within H simultainiously have a corner orient
 
 `H = (C ∩ E ∩ UD), C = {g: g ∈ G, g.corner_orientation = 0}, E = {g: g ∈ G, g.edge_orientation = 0}, UD = {g: g ∈ G, g.UDslice_position = 0}`
 
-If the cardinality of G is `|G| = 43252003274489856000`, then it reasons that
+So the subgroup H is composed of all cubes that satisfy H's specific conditions, but as implied by the premise of a subgroup it's only a fraction of the whole group G. 
+
+Let's imagine that we take that solved but restickered cube, and we apply some move to it. It's H form - restickered as shown above - is completely unique, however from it spawn another 19,508,428,800 variations within that shuffle about all of the pieces such that is still holds the same H form, but look wholistically different. Again, apply another move and you have another 19,508,428,800 varitations th at conform to that same H form. 
+
+In the language of group theory, the subgroup H is defined above as the group of all elements in G which fit it's requirements, where each element is a permutation of the cube group itself. We apply some move `M` to the subgroup H to create a **coset**: 
+
+`H*M = {h*M: h ∈ H}`
+
+
+`|G|/|H| = 2,217,093,120` 
+
+
+If the cardinality of G is `|G| = 43252003274489856000`
