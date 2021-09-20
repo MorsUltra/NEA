@@ -1,5 +1,3 @@
-[H-cube](./docs/h-cube.png)
-
 # Rubiks cube solver 
 
 ## The two phase algorithm
@@ -567,3 +565,22 @@ Intuitively this translates to the following prodcedure:
 2. Using the nature of position - an integer value - to index the current permtuation and replace the corner at each `i`.
 
 ## Coordinate level 
+
+Let's imagine a solved cube, then restickering it in a such a fashion: 
+![H-cube](./docs/h-cube.png)
+Opposite colours are restickered to be homogenous, and all the stickers that do not constitute a part of a UD-slice or top/bottom face are removed. 
+
+This cube is a "default" cube from the subgroup H of the cube group, where every edge/corner is orientated correctly, and the UD-slice edges are in their home slice. 
+
+Note that the cube could be one of many variations under this "restickered" process, where corners could be indisriminately exchanged with one another and you would be none the wiser as those variations are ommitted under this process. 
+
+Intutively it's fairly easy to work out that the cardinality - or the number of elements in -  of the subgroup H is `8!8!4!/2 = 19,508,428,800`. More simply, the number of variations of the restickerd cube shown above is aproximately 19 billion - `8!` ways to permutate the top and bottom edges withotu changing the orientations, `8!` ways to permutate the edges in the top and bottom faces withou changing the orientation,and `4!` ways to permutatino the edges in the middle. The `/2` is derrived from the notation that each rotation of teh cube's faces effects an even number of corners and edges - some "odd" permtuations and orientations are simply not possibel withotu dissassembling the cube itself. 
+
+
+So, the subgroup H has 19.5*10^8 variations within that constitute to this "default" position, and our objective in phase one is find a series of moves that take our scrambled cube to one that is a part of this cubegroup. 
+
+At the coordinate level, all cubes within H simultainiously have a corner orientation coordinate of 0, an edge orientation coordinate of 0 and a UD-slice coordinate of 0:
+
+`H = (C ∩ E ∩ UD), C = {g: g ∈ G, g.corner_orientation = 0}, E = {g: g ∈ G, g.edge_orientation = 0}, UD = {g: g ∈ G, g.UDslice_position = 0}`
+
+Theoretically, 
