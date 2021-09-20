@@ -1,3 +1,5 @@
+[H-cube](./docs/h-cube.png)
+
 # Rubiks cube solver 
 
 ## The two phase algorithm
