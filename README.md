@@ -567,15 +567,16 @@ Intuitively this translates to the following prodcedure:
 ## Coordinate level 
 
 Let's imagine a solved cube, then restickering it in a such a fashion: 
-![H-cube](./docs/h-cube.png)
+
+![H-cube](./docs/h_cube.png)
+
 Opposite colours are restickered to be homogenous, and all the stickers that do not constitute a part of a UD-slice or top/bottom face are removed. 
 
 This cube is a "default" cube from the subgroup H of the cube group, where every edge/corner is orientated correctly, and the UD-slice edges are in their home slice. 
 
 Note that the cube could be one of many variations under this "restickered" process, where corners could be indisriminately exchanged with one another and you would be none the wiser as those variations are ommitted under this process. 
 
-Intutively it's fairly easy to work out that the cardinality - or the number of elements in -  of the subgroup H is `8!8!4!/2 = 19,508,428,800`. More simply, the number of variations of the restickerd cube shown above is aproximately 19 billion - `8!` ways to permutate the top and bottom edges withotu changing the orientations, `8!` ways to permutate the edges in the top and bottom faces withou changing the orientation,and `4!` ways to permutatino the edges in the middle. The `/2` is derrived from the notation that each rotation of teh cube's faces effects an even number of corners and edges - some "odd" permtuations and orientations are simply not possibel withotu dissassembling the cube itself. 
-
+Intuitively it's fairly easy to work out that the cardinality - or the number of elements in -  of the subgroup H is `8!8!4!/2 = 19,508,428,800`. More simply, the number of variations of the restickerd cube shown above is aproximately 19 billion - `8!` ways to permutate the top and bottom edges withotu changing the orientations, `8!` ways to permutate the edges in the top and bottom faces withou changing the orientation,and `4!` ways to permutatino the edges in the middle. The `/2` is derrived from the notation that each rotation of teh cube's faces effects an even number of corners and edges - some "odd" permtuations and orientations are simply not possibel withotu dissassembling the cube itself.
 
 So, the subgroup H has 19.5*10^8 variations within that constitute to this "default" position, and our objective in phase one is find a series of moves that take our scrambled cube to one that is a part of this cubegroup. 
 
@@ -585,14 +586,26 @@ At the coordinate level, all cubes within H simultainiously have a corner orient
 
 So the subgroup H is composed of all cubes that satisfy H's specific conditions, but as implied by the premise of a subgroup it's only a fraction of the whole group G. 
 
-Let's imagine that we take that solved but restickered cube, and we apply some move to it. It's H form - restickered as shown above - is completely unique, however from it spawn another 19,508,428,800 variations within that shuffle about all of the pieces such that is still holds the same H form, but look wholistically different. Again, apply another move and you have another 19,508,428,800 varitations th at conform to that same H form. 
+Let's imagine that we take that solved but restickered cube, and we apply some move to it. It's H form - restickered as shown above - is completely unique:
+
+![H*R-cube](./docs/hr_cube.png)
+
+From it spawn another 19,508,428,800 variations within, that shuffle about all of the pieces such that is still holds the same H form above when restickered, but are wholistically different. Again, apply another move and you have another 19,508,428,800 varitations th at conform to that same H form. 
 
 In the language of group theory, the subgroup H is defined above as the group of all elements in G which fit it's requirements, where each element is a permutation of the cube group itself. We apply some move `M` to the subgroup H to create a **coset**: 
 
-`H*M = {h*M: h ∈ H}`
+`H*M = {h*M: h ∈ H}, where * is the group operation of a move. `
+
+It reasons that you might continue this process, apply some moves to the "default" H cube until every permutation in G is defined as part of a coset of H. 
+
+It reasons that to obtain all the elements of G again using a subgroup as a "coposer" of sorts we might have `|G|/|H| = 2,217,093,120` cosets or variations of H. 
+
+This process of reasoning leads us to the conclusion that every single permutation `p` in G belongs to a coset of H `p ∈ H*M`. The group operation of a move is obviously commutative, so a serious of moves `M` can be reversed by simply doing it in reverse `M'`, therefore you might conclude that any permutation `p ∈ G, p ∈ H*M` can be returned to one of 19,508,428,800 elements `p'` in the normal subgroup H by finding `M'` and applying that to the cube. 
+
+Coordinates allow us to navigate this problem. The tuple comprised of the three phase-1 coordinates direct us to some coset `H*M` of H, and our object is to find the sequence of moves `M'` that return our coordinates to the normal subgroup - we know this has occured when the tuple renders to `(0, 0, 0)`. 
+
+We might repeat this process for phase two, using our member of the subgroup H to navigate through it the alternative subgroup Q, which generates 10,863,756,288,000 cosets of 3,981,312 elements each under the premise that we only use half turns of the side faces and any turn for the top and bottom - changing the position of pieces but maintaining their orientation. Given these factors and the premise that the orientations are set from phase one, by again finding the inverse of the sequences of moves such that we might return the cube to a solved state.   
 
 
-`|G|/|H| = 2,217,093,120` 
 
 
-If the cardinality of G is `|G| = 43252003274489856000`
