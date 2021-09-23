@@ -1,6 +1,7 @@
 from definitions.cubedefs import *
 from functools import reduce
 from math import comb as CNK
+from random import randint
 
 
 class cubiecube:
@@ -24,6 +25,20 @@ class cubiecube:
         fc.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in enumerate(fc.f)]
 
         return "".join(fc.f)
+
+    def shuffle(self):
+        self.Pcorner_coords = randint(0, 40319)
+        self.Pedge_coords = randint(0, 479001599)
+        while True:
+            self.Ocorner_coords = randint(0, 2186)
+            self.Oedge_coords = randint(0, 2047)
+            if sum(self.eo) % 2 != 0:
+                continue
+            elif sum(self.co) % 3 != 0:
+                continue
+            else:
+                break
+
 
     def MOVE(self, to_apply):
         self.Cmove(to_apply)

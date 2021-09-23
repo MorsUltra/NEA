@@ -3,7 +3,7 @@ from pygame.locals import *
 from .pygame_facelets import load
 from definitions.cubedefs import urf_facelet_indices, raw_colours
 
-resources = r"C:\Users\olive\Desktop\NEA\GUI\lib"
+resources = r"C:\Programming\NEA\GUI\lib"
 
 width = 100
 mid = (width/2) - 12
