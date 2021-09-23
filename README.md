@@ -11,12 +11,12 @@ With this information, it's possible to split the cube's various states into dif
 # Phase One
 The first group, you only consider the orientation of the corners and edges, as well as the position of the *UD-slice* (UD-slice refers to the edges bounded by the U and D faces) edges (we do not consider how these edges are orientated or positioned, just which edge spaces are occupied by these middle edges).
 
-This effectifly limits both the quantity of data you have to keep tract of when manipulating the cube (for instance, the position of the pieces), and the distance you have to search through to reach the indentity element of this group - a cube where the edges and corners are orientated correctly, and where the UD-slice edges are somewhere in the UD-slice.
+This effectively limits both the quantity of data you have to keep tract of when manipulating the cube (for instance, the position of the pieces), and the distance you have to search through to reach the indentity element of this group - a cube where the edges and corners are orientated correctly, and where the UD-slice edges are somewhere in the UD-slice.
 
-The aforementined coorinates are represented in various ways that best suite what they represent:
+The aforementioned coorinates are represented in various ways that best suite what they represent:
 
 ### The corner orientation coordinate
-A corner can be orientated one of three ways which therefore warrents a ternary number system as the most fitting method of representing each corner.
+A corner can be orientated one of three ways which therefore warrants a ternary number system as the most fitting method of representing each corner.
 
 **0** implies that the corner is not rotated from its default state (as defined in some basic setup)
 **1** that the corner has been twisted once clockwise
@@ -565,6 +565,16 @@ Intuitively this translates to the following prodcedure:
 2. Using the nature of position - an integer value - to index the current permtuation and replace the corner at each `i`.
 
 ## Coordinate level 
+
+To understand what is ocuuring here a bit of group theory is useful. 
+
+The cube has many states, each one can be reached by performing a sequence of moves to a solved cube. Each of these final states - a mixed-up cube - will be thought of the result of said sequence of moves. 
+
+The gube group **G** therefore, is composed of quintillions of **permutations** that each result in a different final cube. 
+
+You can "divide" this permutations up into smaller **subgroups** by some attribute of each permutation, such as corner orientation or position of the edges. In each of these cases we group them by these defining factors and ignore the others. 
+
+One such subgroup is the subgroup we will call H: {
 
 Let's imagine a solved cube, then restickering it in a such a fashion: 
 
