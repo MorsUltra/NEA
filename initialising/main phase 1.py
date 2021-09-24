@@ -3,23 +3,76 @@ from definitions.moves import *
 from definitions.facelet_cube import facelet_cube
 from definitions.cubie_cube import cubiecube
 from table_init import tables
+from pprint import pprint
+import time
+import queue
+import threading
 
-class solver:
+
+class solver():
+
+    def __init__(self, cube, multithreading=False):
+        self._running = True
+        self.phase1 = phase1(cube)
+        # self.phase2 = phase2(cube)
+        self.cc = cube
+        self.solution = [] if multithreading else None
+        self.multithreading = multithreading
+        self.solution_count = 0
+
+    def solve(self):
+        if self.multithreading:
+            print("multi")
+            self.multi()
+
+        else:
+            self.phase1.depth_search()
+
+        return None
+
+    def multi(self):
+        # start phase 1 which starts appending things to it's queue
+        self.phase1_thread = threading.Thread(target=self.phase1.depth_search)
+        self.phase1_thread.start()
+        # start phase 2 workers which will work through the solutions in phase 1 as they occur
+        #self.phase2_workers = threading.Thread(target=self.phase2_worker, args=self.cc)
+        # checker to terminate process if all phase 1 solutions have been found
+        #checker = threading.Thread(target=self.checker)
+
+    def phase2_worker(self, cc):
+        # phase1.solutions holds current solutions to phase 1
+        while self._running:
+            phase1 = self.phase1.solutions.get()  # get solution to phase 1
+            if phase1:
+                self.solution_count += 1
+                self.phase1.solutions.task_done()
+                cc = self.do_moves(phase1)
+                self.soluion.append(self.phase2(cc))
+
+    def checker(self):
+        while True:
+            if not self.phase1_thread.isAlive() and self.solution_count == len(self.solutions):
+                self.terminate()
+
+    def terminate(self):
+        self._running = False  # shuts down workers
+        self.phase1.terminate()  # stops IDA* search
+        #self.phase2.terminate()  # stops IDA* search
+
+
+class phase_searcher:
+    t = tables()
+
     moves = [Umove,
              Rmove,
              Lmove,
              Dmove,
              Fmove,
              Bmove]
-    def __init__(self, string, hypertheading=False):
-        pass
 
-
-class phase_searcher:
-    t = tables()
-
-    def __init__(self, cube, length, stats=None):
+    def __init__(self, cube, length=30):
         self.cube = cube
+
         self.max = length
         self.axis = [-1] * length
         self.moves_power = [-1] * length
@@ -29,35 +82,45 @@ class phase_searcher:
         self.coord2 = [0] * length
         self.coord3 = [0] * length
 
+        self._running = True
+        self.solutions = queue.Queue()
+
+    def terminate(self):
+        self._running = False
+
     @property
     def stats(self):
-        print("IMPROVED SOLVER----:")
-        self.h_costs = [i for i in self.h_costs if i != -1]
-        self.axis = [i for i in self.axis if i != -1]
-        self.moves_power = [i for i in self.moves_power if i != -1]
+        axis = [i for i in self.axis if i != -1]
+        moves_power = [i for i in self.moves_power if i != -1]
 
-        return self.h_costs, self.axis, self.moves_power
+        return axis, moves_power
 
     def depth_search(self):
         for lower_bound in range(self.max):
             print(f"Lower bound-----------------: {lower_bound}")
             n = self.ida(0, lower_bound)
             if n > 0:
-                break
+                time.sleep(1)
+                self.solutions.put(self.stats)
 
-        return n
+        return n, self.solutions
+
+    def apply_moves(self, axis, powers):
+        for i, move in enumerate(axis):
+            for power in range(powers[i]):
+                c.MOVE(self.moves[move])
 
     def h(self, node_depth):
-        return None
+        pass
 
     def ida(self, node_depth, q):
-        return None
+        pass
 
 
 class phase1(phase_searcher):
 
-    def __init__(self, cube, length):
-        super().__init__(cube, length)
+    def __init__(self, cube, length=30):
+        super().__init__(cube)
 
         self.coord1[0] = self.cube.Ocorner_coords
         self.coord2[0] = self.cube.Oedge_coords
@@ -74,6 +137,8 @@ class phase1(phase_searcher):
         if self.h(node_depth) == 0:
             return node_depth
 
+        if not self._running:
+            return -2
         elif self.h_costs[node_depth] <= q:  # if within lower bounds
             for axis in range(6):
                 # can optimise that 0 designed to fix errors from starting and referencing previous nodes and depths
@@ -127,6 +192,9 @@ class phase2(phase_searcher):
         if self.h(node_depth) == 0:
             return node_depth
 
+        if not self._running:
+            return -2
+
         elif self.h_costs[node_depth] <= q:  # if within lower bounds
             for axis in range(6):
                 # can optimise that 0 designed to fix errors from starting and referencing previous nodes and depths
@@ -169,43 +237,17 @@ c = cubiecube()
 c.shuffle()
 print(c.to_facelet_cube(facelet_cube()))
 
-p = phase1(c, 30)  # appears to be working??
-print(p.depth_search())
-print(p.stats)
-
-# s = solver(c.to_facelet_cube(facelet_cube()))
-# s.solve()
-
-costs, axis, powers = p.stats
-moves = [Umove,
-         Rmove,
-         Lmove,
-         Dmove,
-         Fmove,
-         Bmove]
-
-for i, move in enumerate(axis):
-    for power in range(powers[i]):
-        c.MOVE(moves[move])
+s = solver(c, multithreading=True)
+s.solve()
 
 
-p2 = phase2(c, 30)
-print(p2.depth_search())
-print(p2.stats)
 
-costs, axis, powers = p2.stats
-moves = [Umove,
-         Rmove,
-         Lmove,
-         Dmove,
-         Fmove,
-         Bmove]
+print(s.phase1.solutions.get()) # don't progress until one has been found
+print(s.phase1.solutions.get())
 
-for i, move in enumerate(axis):
-    for power in range(powers[i]):
-        c.MOVE(moves[move])
+print(s.phase1.solutions.get())
+print(s.phase1.solutions.get())
+s.terminate()
+print(s.phase1.solutions.get())
 
 
-from GUI.pygame_draw_cube import draw
-
-draw(c.to_facelet_cube(facelet_cube()))
