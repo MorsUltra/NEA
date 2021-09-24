@@ -14,15 +14,14 @@ class solver():
     def __init__(self, cube, multithreading=False):
         self._running = True
         self.phase1 = phase1(cube)
-        # self.phase2 = phase2(cube)
+        self.phase2 = phase2
         self.cc = cube
-        self.solution = [] if multithreading else None
+        self.final_solutions = [] if multithreading else None
         self.multithreading = multithreading
         self.solution_count = 0
 
     def solve(self):
         if self.multithreading:
-            print("multi")
             self.multi()
 
         else:
@@ -35,19 +34,34 @@ class solver():
         self.phase1_thread = threading.Thread(target=self.phase1.depth_search)
         self.phase1_thread.start()
         # start phase 2 workers which will work through the solutions in phase 1 as they occur
-        #self.phase2_workers = threading.Thread(target=self.phase2_worker, args=self.cc)
+        self.phase2_workers1 = threading.Thread(target=self.phase2_worker, args=(self.cc,))
+        # self.phase2_workers2 = threading.Thread(target=self.phase2_worker, args=(self.cc,))
+        self.phase2_workers1.start()
+        # self.phase2_workers2.start()
         # checker to terminate process if all phase 1 solutions have been found
         #checker = threading.Thread(target=self.checker)
 
     def phase2_worker(self, cc):
         # phase1.solutions holds current solutions to phase 1
         while self._running:
-            phase1 = self.phase1.solutions.get()  # get solution to phase 1
-            if phase1:
-                self.solution_count += 1
-                self.phase1.solutions.task_done()
-                cc = self.do_moves(phase1)
-                self.soluion.append(self.phase2(cc))
+            phase1 = self.phase1.q.get()  # get solution to phase 1
+
+            cc.MOVE_arr(*phase1)
+
+            print("coords", cc.Ocorner_coords, cc.Oedge_coords) # TODO I think there's a bug with the coordinate tables somewhere? It keeps producing random coordinate pairs that are making no sense
+
+
+            print("phase 2 searching")
+            phase2_solver = self.phase2(cc) # TODO need to clean up how this works with passing solutions between the objects
+            phase2_solver.depth_search()
+
+            phase2_solution = phase2_solver.q.get()
+            phase2_solver.q.task_done()
+
+            self.final_solutions.append(zip(phase1, phase2_solution))
+
+            self.phase1.q.task_done()
+            print("Phase 2 thread completed")
 
     def checker(self):
         while True:
@@ -63,13 +77,6 @@ class solver():
 class phase_searcher:
     t = tables()
 
-    moves = [Umove,
-             Rmove,
-             Lmove,
-             Dmove,
-             Fmove,
-             Bmove]
-
     def __init__(self, cube, length=30):
         self.cube = cube
 
@@ -83,7 +90,7 @@ class phase_searcher:
         self.coord3 = [0] * length
 
         self._running = True
-        self.solutions = queue.Queue()
+        self.q = queue.Queue()
 
     def terminate(self):
         self._running = False
@@ -97,18 +104,10 @@ class phase_searcher:
 
     def depth_search(self):
         for lower_bound in range(self.max):
-            print(f"Lower bound-----------------: {lower_bound}")
+            #print(f"Lower bound-----------------: {lower_bound}")
             n = self.ida(0, lower_bound)
             if n > 0:
-                time.sleep(1)
-                self.solutions.put(self.stats)
-
-        return n, self.solutions
-
-    def apply_moves(self, axis, powers):
-        for i, move in enumerate(axis):
-            for power in range(powers[i]):
-                c.MOVE(self.moves[move])
+                self.q.put(self.stats)
 
     def h(self, node_depth):
         pass
@@ -120,7 +119,7 @@ class phase_searcher:
 class phase1(phase_searcher):
 
     def __init__(self, cube, length=30):
-        super().__init__(cube)
+        super().__init__(cube, length=length)
 
         self.coord1[0] = self.cube.Ocorner_coords
         self.coord2[0] = self.cube.Oedge_coords
@@ -139,6 +138,7 @@ class phase1(phase_searcher):
 
         if not self._running:
             return -2
+
         elif self.h_costs[node_depth] <= q:  # if within lower bounds
             for axis in range(6):
                 # can optimise that 0 designed to fix errors from starting and referencing previous nodes and depths
@@ -174,13 +174,21 @@ class phase1(phase_searcher):
 
 class phase2(phase_searcher):
 
-    def __init__(self, cube, length):
-        super().__init__(cube, length)
+    def __init__(self, cube, length=30):
+        super().__init__(cube, length=length)
 
         self.coord1[0] = self.cube.P4edge_coords
         self.coord2[0] = self.cube.Pcorner_coords
         self.coord3[0] = self.cube.P8edge_coords
         self.h_costs[0] = self.h(0)
+
+    def depth_search(self):
+        for lower_bound in range(self.max):
+            print(f"Lower bound-----------------: {lower_bound}")
+            n = self.ida(0, lower_bound)
+            if n > 0:
+                self.q.put(self.stats)
+                break
 
     def h(self, node_depth):
         return max(
@@ -231,23 +239,20 @@ class phase2(phase_searcher):
         return -1
 
 
-defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB DDD DDD DDD"}
+defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB DDD DDD DDD",
+        "random": "BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL"}
 
-c = cubiecube()
-c.shuffle()
-print(c.to_facelet_cube(facelet_cube()))
+c = facelet_cube(defs["random"].replace(" ", ""))
+c = c.to_cubeie_cube(cubiecube())
 
 s = solver(c, multithreading=True)
 s.solve()
 
+while True:
+    print(s.phase1.q.qsize())
 
+    time.sleep(4)
+    print(s.final_solutions)
 
-print(s.phase1.solutions.get()) # don't progress until one has been found
-print(s.phase1.solutions.get())
-
-print(s.phase1.solutions.get())
-print(s.phase1.solutions.get())
-s.terminate()
-print(s.phase1.solutions.get())
 
 

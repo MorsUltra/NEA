@@ -31,10 +31,10 @@ class solver():
     def phase2_worker(self, cc):
         # phase1.solutions holds current solutions to phase 1
         while self._running:
-            phase1 = self.phase1.solutions.get() # get solution to phase 1
+            phase1 = self.phase1.q.get() # get solution to phase 1
             if phase1:
                 self.solution_count += 1
-                self.phase1.solutions.task_done()
+                self.phase1.q.task_done()
                 cc = self.do_moves(phase1)
                 self.soluion.append(self.phase2(cc))
 

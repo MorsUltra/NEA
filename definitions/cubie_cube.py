@@ -2,9 +2,16 @@ from definitions.cubedefs import *
 from functools import reduce
 from math import comb as CNK
 from random import randint
-
+from definitions.moves import *
 
 class cubiecube:
+    moves = [Umove,
+             Rmove,
+             Lmove,
+             Dmove,
+             Fmove,
+             Bmove]
+
     Ocorner_parity_value = [0, 2, 1]
 
     def __init__(self, cp=None, co=None, ep=None, eo=None):
@@ -36,6 +43,11 @@ class cubiecube:
                 continue
             else:
                 break
+
+    def MOVE_arr(self, moves, powers):
+        for i, move in enumerate(moves):
+            for power in range(powers[i]):
+                self.MOVE(self.moves[move])
 
     def MOVE(self, to_apply):
         self.Cmove(to_apply)
