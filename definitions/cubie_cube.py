@@ -27,18 +27,15 @@ class cubiecube:
         return "".join(fc.f)
 
     def shuffle(self):
-        self.Pcorner_coords = randint(0, 40319)
-        self.Pedge_coords = randint(0, 479001599)
+        self.Ocorner_coords = randint(0, 2186)
+        self.Oedge_coords = randint(0, 2047)
         while True:
-            self.Ocorner_coords = randint(0, 2186)
-            self.Oedge_coords = randint(0, 2047)
-            if sum(self.eo) % 2 != 0:
-                continue
-            elif sum(self.co) % 3 != 0:
+            self.Pcorner_coords = randint(0, 40319)
+            self.Pedge_coords = randint(0, 479001599)
+            if self.edge_parity != self.corner_parity:
                 continue
             else:
                 break
-
 
     def MOVE(self, to_apply):
         self.Cmove(to_apply)
@@ -51,6 +48,25 @@ class cubiecube:
     def Emove(self, to_apply):
         self.ep = [self.ep[to_apply.ep[i]] for i in range(12)]
         self.eo = [(self.eo[to_apply.ep[i]] + to_apply.eo[i]) % 2 for i in range(12)]
+
+    @property
+    def corner_parity(self):
+        parity = 0
+        for q in range(7, 0, -1):
+            for corner in self.cp[:q]:
+                if corner > self.cp[q]:
+                    parity += 1
+        return parity % 2
+
+    @property
+    def edge_parity(self):
+        parity = 0
+        for q in range(11, 0, -1):
+            for edge in self.ep[:q]:
+                if edge > self.ep[q]:
+                    parity += 1
+
+        return parity % 2
 
     @property
     def Ocorner_coords(self):  # working
@@ -250,4 +266,3 @@ class cubiecube:
                 # noinspection PyTypeChecker
                 self.ep[i] = others
                 others += 1
-
