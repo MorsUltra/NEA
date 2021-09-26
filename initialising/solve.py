@@ -29,14 +29,15 @@ class solver:
             self.multi_thread_search()
 
         else:
-            self.phase1_searcher.find_solutions()
+            self.phase1_searcher.find_solutions(single=True)
 
             phase1_solution = self.phase1_searcher.q.get()
 
-            cc = cubiecube(moves=self.cc_data)
+            cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3], moves=phase1_solution)
 
             phase2_solver = self.phase2_searcher(cc)
-            phase2_solver.find_solutions()
+            self.phase2_searchers.append(phase2_solver)
+            phase2_solver.find_solutions(single=True)
 
             phase2_solution = phase2_solver.q.get()
 
@@ -64,7 +65,7 @@ class solver:
                 phase2_searcher = self.phase2_searcher(cc)
                 self.phase2_searchers.append(phase2_searcher)
 
-                phase2_searcher.find_solutions()
+                phase2_searcher.find_solutions(single=True)
 
                 # When terminated during search won't produce solution so will hang at this .get() if not compensated for
                 if not phase2_searcher.q.empty():
@@ -120,11 +121,15 @@ class phase_searcher:
 
         return axis, moves_power
 
-    def find_solutions(self):  # TODO need a "find first" system where it will break on finding the first solution
+    def find_solutions(self, single=False):  # TODO need a "find first" system where it will break on finding the first solution
         for lower_bound in range(self.max):
             n = self.ida(0, lower_bound)
             if n > 0:
                 self.q.put(self.stats)
+                if single:
+                    break
+                else:
+                    continue
 
     def h(self, node_depth):
         pass
@@ -199,13 +204,6 @@ class phase2(phase_searcher):
         self.coord3[0] = self.cube.P8edge_coords
         self.h_costs[0] = self.h(0)
 
-    def find_solutions(self):
-        for lower_bound in range(self.max):
-            n = self.ida(0, lower_bound)
-            if n > 0:
-                self.q.put(self.stats)
-                break
-
     def h(self, node_depth):
         return max(
             self.t.P4edge_P8edge_Ptable[self.coord1[node_depth]][self.coord3[node_depth]],
@@ -258,8 +256,5 @@ c = c.to_cubeie_cube(cubiecube())
 c = cubiecube()
 c.shuffle()
 
-s = solver(c, multithreading=True, workers=10)
+s = solver(c, multithreading=False, workers=10)
 s.get_solutions()
-
-while True:
-    print(threading.enumerate())

@@ -95,12 +95,6 @@ class cubiecube:
         self.ep = ep if ep else list(range(0, 12))
         self.eo = eo if eo else [0] * 12
 
-    def to_coord_cube(self):
-
-        cc = coord_cube(self.Pcorner_coords, self.Ocorner_coords, self.Pedge_coords, self.Oedge_coords)
-
-        return cc
-
     def to_facelet_cube(self):
         fc = facelet_cube()
 
