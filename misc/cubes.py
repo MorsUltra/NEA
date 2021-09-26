@@ -326,14 +326,3 @@ class cubiecube:
                 # noinspection PyTypeChecker
                 self.ep[i] = others
                 others += 1
-
-
-class coord_cube:
-    def __init__(self, cp=None, co=None, ep=None, eo=None):
-        self.cp = cp if cp else 0
-        self.co = co if co else 0
-        self.ep = ep if ep else 0
-        self.eo = eo if eo else 0
-
-    def return_coords(self):
-        return [self.cp, self.co, self.ep, self.co]

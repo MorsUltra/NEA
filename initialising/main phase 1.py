@@ -1,77 +1,95 @@
-# from GUI.pygame_draw_cube import draw
-from definitions.moves import *
 from definitions.facelet_cube import facelet_cube
 from definitions.cubie_cube import cubiecube
 from table_init import tables
-from pprint import pprint
-import time
 import queue
 import threading
+import random
+import time
 
 
-class solver():
+class solver:
 
-    def __init__(self, cube, multithreading=False):
+    def __init__(self, cube, multithreading=True, workers=5):
         self._running = True
-        self.phase1 = phase1(cube)
-        self.phase2 = phase2
-        self.cc = cube
-        self.final_solutions = [] if multithreading else None
         self.multithreading = multithreading
-        self.solution_count = 0
 
-    def solve(self):
+        self.phase1_searcher = phase1(cube)
+        self.phase2_searcher = phase2
+        self.phase2_searchers = []
+
+        self.cc_data = cube.to_data_arr()
+
+        self.final_solutions = []
+
+        self.phase1_thread = threading.Thread(target=self.phase1_searcher.find_solutions)
+        self.phase2_worker_threads = [threading.Thread(target=self.phase2_worker) for _ in range(workers)]
+
+    def get_solutions(self):
         if self.multithreading:
-            self.multi()
+            self.multi_thread_search()
 
         else:
-            self.phase1.depth_search()
+            self.phase1_searcher.find_solutions()
 
-        return None
+            phase1_solution = self.phase1_searcher.q.get()
 
-    def multi(self):
-        # start phase 1 which starts appending things to it's queue
-        self.phase1_thread = threading.Thread(target=self.phase1.depth_search)
-        self.phase1_thread.start()
-        # start phase 2 workers which will work through the solutions in phase 1 as they occur
-        self.phase2_workers1 = threading.Thread(target=self.phase2_worker, args=(self.cc,))
-        # self.phase2_workers2 = threading.Thread(target=self.phase2_worker, args=(self.cc,))
-        self.phase2_workers1.start()
-        # self.phase2_workers2.start()
-        # checker to terminate process if all phase 1 solutions have been found
-        #checker = threading.Thread(target=self.checker)
+            cc = cubiecube(moves=self.cc_data)
 
-    def phase2_worker(self, cc):
-        # phase1.solutions holds current solutions to phase 1
-        while self._running:
-            phase1 = self.phase1.q.get()  # get solution to phase 1
-
-            cc.MOVE_arr(*phase1)
-
-            print("coords", cc.Ocorner_coords, cc.Oedge_coords) # TODO I think there's a bug with the coordinate tables somewhere? It keeps producing random coordinate pairs that are making no sense
-
-
-            print("phase 2 searching")
-            phase2_solver = self.phase2(cc) # TODO need to clean up how this works with passing solutions between the objects
-            phase2_solver.depth_search()
+            phase2_solver = self.phase2_searcher(cc)
+            phase2_solver.find_solutions()
 
             phase2_solution = phase2_solver.q.get()
-            phase2_solver.q.task_done()
 
-            self.final_solutions.append(zip(phase1, phase2_solution))
+            moves = phase1_solution[0] + phase2_solution[0]
+            powers = phase1_solution[1] + phase2_solution[1]
 
-            self.phase1.q.task_done()
-            print("Phase 2 thread completed")
+            self.final_solutions.append([moves, powers])
+
+    def multi_thread_search(self):
+        self.phase1_thread.start()
+
+        for worker in self.phase2_worker_threads:
+            worker.start()
+
+        checker = threading.Thread(target=self.checker)
+        checker.start()
+
+    def phase2_worker(self):
+        while self._running:
+            if not self.phase1_searcher.q.empty():
+                phase1_solution = self.phase1_searcher.q.get()
+
+                cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3], moves=phase1_solution)
+
+                phase2_searcher = self.phase2_searcher(cc)
+                self.phase2_searchers.append(phase2_searcher)
+
+                phase2_searcher.find_solutions()
+
+                # When terminated during search won't produce solution so will hang at this .get() if not compensated for
+                if not phase2_searcher.q.empty():
+                    phase2_solution = phase2_searcher.q.get()
+
+                    moves = phase1_solution[0] + phase2_solution[0]
+                    powers = phase1_solution[1] + phase2_solution[1]
+
+                    self.final_solutions.append([moves, powers])
+
+                self.phase1_searcher.q.task_done()
 
     def checker(self):
-        while True:
-            if not self.phase1_thread.isAlive() and self.solution_count == len(self.solutions):
+        while self._running:
+            print(threading.current_thread())
+            if not self.phase1_thread.is_alive() and not self.phase1_searcher.q.unfinished_tasks:
                 self.terminate()
 
     def terminate(self):
-        self._running = False  # shuts down workers
-        self.phase1.terminate()  # stops IDA* search
-        #self.phase2.terminate()  # stops IDA* search
+        self._running = False
+
+        self.phase1_searcher.terminate()
+
+        for searcher in self.phase2_searchers:
+            searcher.terminate()
 
 
 class phase_searcher:
@@ -102,9 +120,8 @@ class phase_searcher:
 
         return axis, moves_power
 
-    def depth_search(self):
+    def find_solutions(self):  # TODO need a "find first" system where it will break on finding the first solution
         for lower_bound in range(self.max):
-            #print(f"Lower bound-----------------: {lower_bound}")
             n = self.ida(0, lower_bound)
             if n > 0:
                 self.q.put(self.stats)
@@ -133,11 +150,11 @@ class phase1(phase_searcher):
         )
 
     def ida(self, node_depth, q):
-        if self.h(node_depth) == 0:
-            return node_depth
-
         if not self._running:
             return -2
+
+        if self.h(node_depth) == 0:
+            return node_depth
 
         elif self.h_costs[node_depth] <= q:  # if within lower bounds
             for axis in range(6):
@@ -182,9 +199,8 @@ class phase2(phase_searcher):
         self.coord3[0] = self.cube.P8edge_coords
         self.h_costs[0] = self.h(0)
 
-    def depth_search(self):
+    def find_solutions(self):
         for lower_bound in range(self.max):
-            print(f"Lower bound-----------------: {lower_bound}")
             n = self.ida(0, lower_bound)
             if n > 0:
                 self.q.put(self.stats)
@@ -197,17 +213,15 @@ class phase2(phase_searcher):
         )
 
     def ida(self, node_depth, q):
-        if self.h(node_depth) == 0:
-            return node_depth
-
         if not self._running:
             return -2
 
-        elif self.h_costs[node_depth] <= q:  # if within lower bounds
+        if self.h(node_depth) == 0:
+            return node_depth
+
+        elif self.h_costs[node_depth] <= q:
             for axis in range(6):
-                # can optimise that 0 designed to fix errors from starting and referencing previous nodes and depths
                 if node_depth > 0 and self.axis[node_depth - 1] in (axis, axis + 3):
-                    # if the node is not at the start and
                     continue
                 else:
                     for move_power in range(3):
@@ -218,24 +232,20 @@ class phase2(phase_searcher):
                         self.moves_power[node_depth] = move_power + 1
                         table_index = axis * 3 + move_power
 
-                        # get the new coords for the conneting node achieved by doing that move with that power
                         self.coord1[node_depth + 1] = self.t.P4edge_table[self.coord1[node_depth]][
-                            table_index]  # Pedge4_coords
+                            table_index]
                         self.coord2[node_depth + 1] = self.t.Pcorner_table[self.coord2[node_depth]][
-                            table_index]  # Pcorner_coords
+                            table_index]
                         self.coord3[node_depth + 1] = self.t.P8edge_table[self.coord3[node_depth]][
-                            table_index]  # Pedge8_coords
+                            table_index]
 
-                        # get the cost of the next node
                         self.h_costs[node_depth + 1] = self.h(node_depth + 1)
 
-                        # search the next node defined above with the assumption that you can get closer to the target subgroup
                         continue_search = self.ida(node_depth + 1, q - 1)
 
                         if continue_search >= 0:
                             return continue_search
 
-        # no more nodes here that get you closer to the target state
         return -1
 
 
@@ -245,14 +255,11 @@ defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB D
 c = facelet_cube(defs["random"].replace(" ", ""))
 c = c.to_cubeie_cube(cubiecube())
 
-s = solver(c, multithreading=True)
-s.solve()
+c = cubiecube()
+c.shuffle()
+
+s = solver(c, multithreading=True, workers=10)
+s.get_solutions()
 
 while True:
-    print(s.phase1.q.qsize())
-
-    time.sleep(4)
-    print(s.final_solutions)
-
-
-
+    print(threading.enumerate())

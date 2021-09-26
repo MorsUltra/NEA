@@ -4,7 +4,7 @@ import sys
 from pygame.locals import *
 import os
 from GUI.pygame_facelets import load
-from initialising.cubes import cubiecube
+from misc.cubes import cubiecube
 from definitions.cubedefs import urf_facelet_indices
 
 screen_width = 1920

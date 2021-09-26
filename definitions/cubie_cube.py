@@ -4,6 +4,7 @@ from math import comb as CNK
 from random import randint
 from definitions.moves import *
 
+
 class cubiecube:
     moves = [Umove,
              Rmove,
@@ -14,11 +15,17 @@ class cubiecube:
 
     Ocorner_parity_value = [0, 2, 1]
 
-    def __init__(self, cp=None, co=None, ep=None, eo=None):
+    def __init__(self, cp=None, co=None, ep=None, eo=None, moves=None):
         self.cp = cp if cp else list(range(0, 8))
         self.co = co if co else [0] * 8
         self.ep = ep if ep else list(range(0, 12))
         self.eo = eo if eo else [0] * 12
+        
+        if moves: 
+            self.MOVE_arr(*moves)
+
+    def to_data_arr(self):
+        return self.cp, self.co, self.ep, self.eo
 
     def to_facelet_cube(self, fc):
         for corner in corner_indices:
