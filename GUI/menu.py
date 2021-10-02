@@ -7,6 +7,7 @@ from GUI.pygame_facelets import load
 from definitions.cubie_cube import cubiecube
 from definitions.facelet_cube import facelet_cube
 from definitions.cubedefs import urf_facelet_indices
+from definitions.moves import * # TODO bug with this import here somehow, no idea :')
 
 screen_width = 1920
 screen_height = 1080
@@ -26,21 +27,29 @@ class cube():
                "Yellow",
                "Blue"]
 
+    # moves = {"U":Umove, "F":Fmove, "R":Rmove, "L":Lmove, "D":Dmove, "B":Bmove}
+
     sides = ["U", "F", "R", "L", "D", "B"]
 
-    def __init__(self):
+    def __init__(self, static=False, scaling=1):
         self.cubiecube = cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.urf = self.get_urf()
 
+        self.scaling = scaling
         self.loop_cnt = 0
         self.x_constant = 1
         self.y_constant = 1
         self.size = 55
-        self.rect = pygame.Rect(randint(1, screen_width - self.size - 1), randint(1, screen_height - self.size - 1),
-                                self.size, self.size)
-        self.rect = pygame.Rect(20, 20,
-                                self.size, self.size)
+
+        if static:
+            self.rect = pygame.Rect(static[0], static[1], self.size, self.size)
+        else:
+            self.rect = pygame.Rect(randint(1, screen_width - self.size - 1), randint(1, screen_height - self.size - 1),
+                                    self.size, self.size)
+
+        # self.rect = pygame.Rect(20, 20,
+        #                         self.size, self.size)
         resources = os.getcwd() + r"/lib"
 
         self.top, self.left, self.right = load(resources)
@@ -53,7 +62,12 @@ class cube():
             raw = raw.replace(face, self.colours[i][0])
         return raw
 
-    def draw_cube(self, screen):
+    # def move(self, move):
+    #     self.cubiecube.MOVE(self.moves[move])
+    #     self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
+    #     self.urf = self.get_urf()
+
+    def dynamic_draw(self, screen):
         corners = [(self.rect.x, self.rect.y), (self.rect.x + self.size, self.rect.y + self.size),
                    (self.rect.x + self.size, self.rect.y), (self.rect.x, self.rect.y + self.size)]
 
@@ -80,23 +94,38 @@ class cube():
 
         self.rect.move_ip(1 * self.x_constant, 1 * self.y_constant)
 
+        self.draw(screen)
+
+    def draw(self, screen):
         rectx = self.rect.x
         recty = self.rect.y
+
         for i, face in enumerate(self.urf):
             side = i // 9
             x = i % 3
             y = (i // 3) % 3
             if side == 0:
-                screen.blit(self.top[face.lower()], (rectx + 23 + x * 12 - y * 12, recty + -1 + x * 6 + y * 6))
+                image = self.top[face.lower()]
+                image = self.scale(image)
+                screen.blit(image, (rectx + 23 * self.scaling + x * 12 * self.scaling- y * 12* self.scaling, recty + -1* self.scaling + x * 6* self.scaling + y * 6* self.scaling))
             elif side == 1:
-                screen.blit(self.right[face.lower()], (rectx + 35 + x * 12, recty + 29 - x * 6 + y * 15))
+                image = self.right[face.lower()]
+                image = self.scale(image)
+                screen.blit(image, (rectx + 35* self.scaling + x * 12* self.scaling, recty + 29* self.scaling - x * 6* self.scaling + y * 15* self.scaling))
             elif side == 2:
-                screen.blit(self.left[face.lower()], (rectx + -1 + x * 12, recty + 17 + x * 6 + y * 15))
+                image = self.left[face.lower()]
+                image = self.scale(image)
+                screen.blit(image, (rectx + -1* self.scaling + x * 12 * self.scaling, recty + 17* self.scaling + x * 6 * self.scaling + y * 15 * self.scaling))
 
-    def scramble(self):
-        self.cubiecube.shuffle()
-        self.string = self.cubiecube.to_facelet_cube(facelet_cube())
-        self.urf = self.get_urf()
+    def scale(self, image):
+        x, y = image.get_size()
+        image = pygame.transform.scale(image, (int(x*self.scaling), int(y*self.scaling)))
+        return image
+
+    # def scramble(self):
+    #     self.cubiecube.shuffle()
+    #     self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+    #     self.urf = self.get_urf()
 
 
 class button:
@@ -137,7 +166,13 @@ class button:
 
         self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
 
-        self.activate = function
+        if function:
+            self.activate = function
+        else:
+            self.activate = self.dummy
+
+    def dummy(self, screen):
+        return
 
     def draw(self):
         if self.rounded:
@@ -172,7 +207,7 @@ def solve(screen):
 
         mx, my = pygame.mouse.get_pos()
 
-        image.draw_cube(screen)
+        image.dynamic_draw(screen)
         if click:
             if escape.is_pressed(mx, my):
                 running = False
@@ -202,10 +237,72 @@ def solve(screen):
         pygame.display.update()
 
 
+def scramble_cube():
+    pass
+
+
+def generate(screen):
+    running = True
+    pos = (screen_width-900, 50)
+
+    cc = cube(static=pos, scaling=11)
+
+    escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
+
+    scramble_cube = button(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
+                           shadow_colour=(0, 0, 255))
+
+    objects = [scramble_cube]
+
+    click = False
+
+    while running:
+        clock.tick(400)
+
+
+        screen.fill((40, 43, 48))
+
+        mx, my = pygame.mouse.get_pos()
+
+        if click:
+            if escape.is_pressed(mx, my):
+                running = False
+
+            for obj in objects:
+                if obj.is_pressed(mx, my):
+                    obj.activate(screen)
+
+        cc.move("R")
+        cc.draw(screen)
+
+        escape.draw()
+
+        for obj in objects:  # draw out the objects
+            obj.draw()
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+
+
 def main_menu(screen):
     solve_cube = button(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
 
-    objects = [solve_cube]
+    generate_cube = button(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
+
+    objects = [solve_cube, generate_cube]
 
     click = False
 
@@ -214,7 +311,7 @@ def main_menu(screen):
 
         screen.fill((40, 43, 48))
 
-        image.draw_cube(screen)
+        image.dynamic_draw(screen)
 
         mx, my = pygame.mouse.get_pos()
 
