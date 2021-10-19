@@ -1,4 +1,17 @@
 # Rubiks cube solver 
+The challenge itself: 
+
+When applying hte processing power of computers to a real-life application, the process requires several conditions be satisfied: the real-life can be translated to some form of data; the data might be manipulated
+
+Satisifying both of these conditions simultainously to some degree of success is the largest obstacle for this problem. A cube has ~43 quintilliion unique permutations - can't use a lookup table. The pieces on a cube have both a permutation and an orientation - can't use a simple number based system or describe it with some hashign algorithm. The cube needs to be encoded into a manner that permits quick and efficient maniuplation for additional search hueristics or other puprposes. 
+
+To tackle the first lemma, we must realise that a cube cannot be represented holistally on a computer in a way that one might represent a cube for a grahpical interface - a series of cubies in a 3d space with orientation and position data; we cannot represent it by it's "stickers" or facelets as that's simply too inefficient. Realising this, we might conclude that we can represent a cube by both the **identity** of the pieces and their orientation.
+
+Again, to allow for efficient manipulation, we decide to represent the identity and orientation of some different classes of pieces, such as corners or edges, as required. 
+
+Assumign some such systems exist, we can therefore conclude that an application data-stcuture for representing a cube is a system of coordinates that can each represent a cube. In it's simplist form, a cube can be represented by 4 coordinates corncering the orientaiton and position of both the edges and the corners. We have satisfied the first lemma. 
+
+The second lemma warrents that the data strcuture we have created can be easily manipulated: seperating both the orientation and identiy of the pieces on the cube we can quite easily manipulate them simply by exchanging the identiy of the pieces in specified locations, and "applying" some additional orientation factor to the pieces as they are manipulated. We can store the aforementioned locations and change-in-orientation as pre-defined "moves" that we can apply to the move through a slightly m ore complicated applicaiton of the above method. 
 
 ## The two phase algorithm
 
