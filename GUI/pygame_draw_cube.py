@@ -6,7 +6,7 @@ from definitions.cubedefs import urf_facelet_indices, raw_colours
 resources = r"C:\Programming\NEA\GUI\lib"
 
 width = 100
-mid = (width/2) - 12
+mid = (width / 2) - 12
 pygame.init()
 pygame.display.set_caption("Two-Phase Algorithm")
 screen = pygame.display.set_mode((750, 750), 0, 32)
@@ -14,7 +14,8 @@ display = pygame.Surface((width, width))
 
 top, left, right = load(resources)
 
-def set_colours(raw: str, d = False):
+
+def set_colours(raw: str, d=False):
     raw = raw.replace(" ", "")
     raw = "".join([raw[c] for c in urf_facelet_indices])
 
@@ -33,6 +34,7 @@ def set_colours(raw: str, d = False):
             raw = raw.replace(face, cols[colour][0])
             cols.pop(colour)
         return raw
+
 
 def print_cube(urf):
     while True:
@@ -75,7 +77,6 @@ def print_cube(urf):
 
 
 def draw(from_import):
-    urf = set_colours(from_import, d = True)
+    urf = set_colours(from_import, d=True)
 
     print_cube(urf)
-

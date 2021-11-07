@@ -1,4 +1,4 @@
-from definitions.moves import *
+from definitions.cubie_cube import *
 import numpy as np
 import os
 

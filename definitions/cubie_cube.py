@@ -2,16 +2,9 @@ from definitions.cubedefs import *
 from functools import reduce
 from math import comb as CNK
 from random import randint
-from definitions.moves import *
-
 
 class cubiecube:
-    moves = [Umove,
-             Rmove,
-             Lmove,
-             Dmove,
-             Fmove,
-             Bmove]
+    MOVES = []
 
     Ocorner_parity_value = [0, 2, 1]
 
@@ -20,8 +13,8 @@ class cubiecube:
         self.co = co if co else [0] * 8
         self.ep = ep if ep else list(range(0, 12))
         self.eo = eo if eo else [0] * 12
-        
-        if moves: 
+
+        if moves:
             self.MOVE_arr(*moves)
 
     def to_data_arr(self):
@@ -54,7 +47,7 @@ class cubiecube:
     def MOVE_arr(self, moves, powers):
         for i, move in enumerate(moves):
             for power in range(powers[i]):
-                self.MOVE(self.moves[move])
+                self.MOVE(MOVES[move])
 
     def MOVE(self, to_apply):
         self.Cmove(to_apply)
@@ -285,3 +278,61 @@ class cubiecube:
                 # noinspection PyTypeChecker
                 self.ep[i] = others
                 others += 1
+
+
+cpU = [corner_indices.UBR, corner_indices.URF, corner_indices.UFL, corner_indices.ULB, corner_indices.DFR,
+       corner_indices.DLF, corner_indices.DBL, corner_indices.DRB]
+coU = [0, 0, 0, 0, 0, 0, 0, 0]
+epU = [edge_indices.UB, edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.DR, edge_indices.DF,
+       edge_indices.DL, edge_indices.DB, edge_indices.FR, edge_indices.FL, edge_indices.BL, edge_indices.BR]
+eoU = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+cpR = [corner_indices.DFR, corner_indices.UFL, corner_indices.ULB, corner_indices.URF, corner_indices.DRB,
+       corner_indices.DLF, corner_indices.DBL, corner_indices.UBR]
+coR = [2, 0, 0, 1, 1, 0, 0, 2]
+epR = [edge_indices.FR, edge_indices.UF, edge_indices.UL, edge_indices.UB, edge_indices.BR, edge_indices.DF,
+       edge_indices.DL, edge_indices.DB, edge_indices.DR, edge_indices.FL, edge_indices.BL, edge_indices.UR]
+eoR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+cpF = [corner_indices.UFL, corner_indices.DLF, corner_indices.ULB, corner_indices.UBR, corner_indices.URF,
+       corner_indices.DFR, corner_indices.DBL, corner_indices.DRB]
+coF = [1, 2, 0, 0, 2, 1, 0, 0]
+epF = [edge_indices.UR, edge_indices.FL, edge_indices.UL, edge_indices.UB, edge_indices.DR, edge_indices.FR,
+       edge_indices.DL, edge_indices.DB, edge_indices.UF, edge_indices.DF, edge_indices.BL, edge_indices.BR]
+eoF = [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0]
+
+cpD = [corner_indices.URF, corner_indices.UFL, corner_indices.ULB, corner_indices.UBR, corner_indices.DLF,
+       corner_indices.DBL, corner_indices.DRB, corner_indices.DFR]
+coD = [0, 0, 0, 0, 0, 0, 0, 0]
+epD = [edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.UB, edge_indices.DF, edge_indices.DL,
+       edge_indices.DB, edge_indices.DR, edge_indices.FR, edge_indices.FL, edge_indices.BL, edge_indices.BR]
+eoD = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+cpL = [corner_indices.URF, corner_indices.ULB, corner_indices.DBL, corner_indices.UBR, corner_indices.DFR,
+       corner_indices.UFL, corner_indices.DLF, corner_indices.DRB]
+coL = [0, 1, 2, 0, 0, 2, 1, 0]
+epL = [edge_indices.UR, edge_indices.UF, edge_indices.BL, edge_indices.UB, edge_indices.DR, edge_indices.DF,
+       edge_indices.FL, edge_indices.DB, edge_indices.FR, edge_indices.UL, edge_indices.DL, edge_indices.BR]
+eoL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+cpB = [corner_indices.URF, corner_indices.UFL, corner_indices.UBR, corner_indices.DRB, corner_indices.DFR,
+       corner_indices.DLF, corner_indices.ULB, corner_indices.DBL]
+coB = [0, 0, 1, 2, 0, 0, 2, 1]
+epB = [edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.BR, edge_indices.DR, edge_indices.DF,
+       edge_indices.DL, edge_indices.BL, edge_indices.FR, edge_indices.FL, edge_indices.UB, edge_indices.DB]
+eoB = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
+
+Umove = cubiecube(cp=cpU, co=coU, ep=epU, eo=eoU)
+Rmove = cubiecube(cp=cpR, co=coR, ep=epR, eo=eoR)
+Lmove = cubiecube(cp=cpL, co=coL, ep=epL, eo=eoL)
+Fmove = cubiecube(cp=cpF, co=coF, ep=epF, eo=eoF)
+Bmove = cubiecube(cp=cpB, co=coB, ep=epB, eo=eoB)
+Dmove = cubiecube(cp=cpD, co=coD, ep=epD, eo=eoD)
+
+MOVES = [Umove,
+         Rmove,
+         Lmove,
+         Dmove,
+         Fmove,
+         Bmove]
+cubiecube.moves = MOVES

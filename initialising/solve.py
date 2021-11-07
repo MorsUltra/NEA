@@ -258,3 +258,4 @@ c.shuffle()
 
 s = solver(c, multithreading=False, workers=10)
 s.get_solutions()
+print(s.final_solutions)

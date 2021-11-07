@@ -1,13 +1,12 @@
-from random import randint
+import random
 import pygame
 import sys
 from pygame.locals import *
 import os
 from GUI.pygame_facelets import load
-from definitions.cubie_cube import cubiecube
+from definitions.cubie_cube import cubiecube, MOVES as m
 from definitions.facelet_cube import facelet_cube
 from definitions.cubedefs import urf_facelet_indices
-from definitions.moves import * # TODO bug with this import here somehow, no idea :')
 
 screen_width = 1920
 screen_height = 1080
@@ -27,56 +26,59 @@ class cube():
                "Yellow",
                "Blue"]
 
-    # moves = {"U":Umove, "F":Fmove, "R":Rmove, "L":Lmove, "D":Dmove, "B":Bmove}
-
     sides = ["U", "F", "R", "L", "D", "B"]
+
+    moves = dict(zip(sides, m))
 
     def __init__(self, static=False, scaling=1):
         self.cubiecube = cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
-        self.urf = self.get_urf()
+        self.urf = self.get_urf(self.string)
 
         self.scaling = scaling
         self.loop_cnt = 0
         self.x_constant = 1
         self.y_constant = 1
-        self.size = 55
+        self.x = 72 * scaling
+        self.y = 81 * scaling
 
         if static:
-            self.rect = pygame.Rect(static[0], static[1], self.size, self.size)
+            self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
         else:
-            self.rect = pygame.Rect(randint(1, screen_width - self.size - 1), randint(1, screen_height - self.size - 1),
-                                    self.size, self.size)
+            self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1), random.randint(1, screen_height - self.y - 1),
+                                    self.x, self.y)
 
-        # self.rect = pygame.Rect(20, 20,
-        #                         self.size, self.size)
         resources = os.getcwd() + r"/lib"
 
         self.top, self.left, self.right = load(resources)
 
-    def get_urf(self):
-        return self.set_colours("".join([self.string[c] for c in urf_facelet_indices]))
+    def get_urf(self, string):
+        return self.set_colours("".join([string[c] for c in urf_facelet_indices]))
 
     def set_colours(self, raw):
         for i, face in enumerate(self.sides):
             raw = raw.replace(face, self.colours[i][0])
         return raw
 
-    # def move(self, move):
-    #     self.cubiecube.MOVE(self.moves[move])
-    #     self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
-    #     self.urf = self.get_urf()
+    def move(self, moves, power):
+        self.cubiecube.MOVE_arr(moves, power)
+        self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
+        self.urf = self.get_urf(self.string)
+
+    def shuffle(self):
+        self.cubiecube.shuffle()
+        self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.urf = self.get_urf(self.string)
 
     def dynamic_draw(self, screen):
-        corners = [(self.rect.x, self.rect.y), (self.rect.x + self.size, self.rect.y + self.size),
-                   (self.rect.x + self.size, self.rect.y), (self.rect.x, self.rect.y + self.size)]
+        corners = [self.rect.topleft, self.rect.topright, self.rect.bottomleft, self.rect.bottomright]
 
         for coord in corners:
             if coord[0] >= screen_width or coord[0] <= 0:
                 if coord[1] >= screen_height or coord[1] <= 0:
                     self.x_constant *= -1
                     self.y_constant *= -1
-                    self.scramble()
+                    self.shuffle()
                     break
 
                 self.x_constant *= -1
@@ -86,7 +88,7 @@ class cube():
                 if coord[0] >= screen_width or coord[0] <= 0:
                     self.x_constant *= -1
                     self.y_constant *= -1
-                    self.scramble()
+                    self.shuffle()
                     break
 
                 self.y_constant *= -1
@@ -107,19 +109,23 @@ class cube():
             if side == 0:
                 image = self.top[face.lower()]
                 image = self.scale(image)
-                screen.blit(image, (rectx + 23 * self.scaling + x * 12 * self.scaling- y * 12* self.scaling, recty + -1* self.scaling + x * 6* self.scaling + y * 6* self.scaling))
+                # dimensions of image before scaling: 24 x 6
+                screen.blit(image, (rectx + 23 * self.scaling + x * 12 * self.scaling - y * 12 * self.scaling,
+                                    recty + -1 * self.scaling + x * 6 * self.scaling + y * 6 * self.scaling))
             elif side == 1:
                 image = self.right[face.lower()]
                 image = self.scale(image)
-                screen.blit(image, (rectx + 35* self.scaling + x * 12* self.scaling, recty + 29* self.scaling - x * 6* self.scaling + y * 15* self.scaling))
+                screen.blit(image, (rectx + 35 * self.scaling + x * 12 * self.scaling,
+                                    recty + 29 * self.scaling - x * 6 * self.scaling + y * 15 * self.scaling))
             elif side == 2:
                 image = self.left[face.lower()]
                 image = self.scale(image)
-                screen.blit(image, (rectx + -1* self.scaling + x * 12 * self.scaling, recty + 17* self.scaling + x * 6 * self.scaling + y * 15 * self.scaling))
+                screen.blit(image, (rectx + -1 * self.scaling + x * 12 * self.scaling,
+                                    recty + 17 * self.scaling + x * 6 * self.scaling + y * 15 * self.scaling))
 
     def scale(self, image):
         x, y = image.get_size()
-        image = pygame.transform.scale(image, (int(x*self.scaling), int(y*self.scaling)))
+        image = pygame.transform.scale(image, (int(x * self.scaling), int(y * self.scaling)))
         return image
 
     # def scramble(self):
@@ -237,15 +243,17 @@ def solve(screen):
         pygame.display.update()
 
 
-def scramble_cube():
-    pass
-
+def scramble(cc, length):
+    moves = [random.randint(0, 5) for x in range(length)]
+    power = [random.randint(1, 3) for x in range(length)]
+    cc.move(moves, power)
 
 def generate(screen):
     running = True
-    pos = (screen_width-900, 50)
+    POS = (screen_width - 900, 50)
+    SCALING = 11
 
-    cc = cube(static=pos, scaling=11)
+    cc = cube(static=POS, scaling=SCALING)
 
     escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
@@ -259,20 +267,23 @@ def generate(screen):
     while running:
         clock.tick(400)
 
-
         screen.fill((40, 43, 48))
 
         mx, my = pygame.mouse.get_pos()
 
         if click:
+
             if escape.is_pressed(mx, my):
                 running = False
+
+            if scramble_cube.is_pressed(mx, my):
+                cc = cube(static=POS, scaling=SCALING)
+                scramble(cc, 10)
 
             for obj in objects:
                 if obj.is_pressed(mx, my):
                     obj.activate(screen)
 
-        cc.move("R")
         cc.draw(screen)
 
         escape.draw()
@@ -307,7 +318,7 @@ def main_menu(screen):
     click = False
 
     while True:
-        clock.tick(400)
+        clock.tick(10000)
 
         screen.fill((40, 43, 48))
 
@@ -340,5 +351,5 @@ def main_menu(screen):
         pygame.display.update()
 
 
-image = cube()
+image = cube(scaling=6)
 main_menu(screen)
