@@ -45,7 +45,8 @@ class cube():
         if static:
             self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
         else:
-            self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1), random.randint(1, screen_height - self.y - 1),
+            self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1),
+                                    random.randint(1, screen_height - self.y - 1),
                                     self.x, self.y)
 
         resources = os.getcwd() + r"/lib"
@@ -134,8 +135,60 @@ class cube():
     #     self.urf = self.get_urf()
 
 
+class text:
+    padding = 7
+
+    font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
+
+    def __init__(self, screen, text, position, size=40, rounded=True, background_colour=(0, 0, 0),
+                 text_colour=(255, 255, 255), padding=False, max_width=None):
+        self.font = pygame.font.Font(self.font_path, size)
+
+        self.screen = screen
+
+        self.rounded = rounded
+
+        if padding:
+            self.padding = padding
+
+        self.position = position
+
+        self.background_colour = background_colour
+
+        self.text_colour = text_colour
+
+        self.text = text
+
+        if max_width:
+            self.get_lines(text, max_width)  # TODO Properly implement the get lines function for word wrapping
+
+        else:
+            self.text = self.font.render(text, False, self.text_colour)
+
+    def get_lines(self, text, max_width):
+        font = pygame.font.Font(self.font_path, 20)
+        lines = []
+
+        while text:
+            print(lines)
+            for i, letter in enumerate(text):
+
+                t = font.render(text[:i], False, (255, 255, 255))
+                size = t.get_width() + 2 * self.padding
+                if size >= max_width:
+                    lines.append(text[:i - 1])
+                    text = text[i - 1:]
+                    break
+                if i + 1 == len(text):
+                    lines.append(text)
+                    text = None
+                    break
+
+        print(lines)
+
+
 class button:
-    shadow = 5
+    shadow_offset = 5
     padding = 10
 
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
@@ -162,13 +215,13 @@ class button:
         self.background_colour = background_colour
 
         self.text = text
-        self.fsize = 40
 
         self.text = self.font.render(text, False, self.text_colour)
         self.text_shadow = self.font.render(text, False, self.shadow_colour)
 
-        self.dimensions = self.text.get_width() + 2 * (self.padding + self.shadow), self.text.get_height() + 2 * (
-                self.padding + self.shadow)
+        self.dimensions = self.text.get_width() + 2 * (
+                self.padding + self.shadow_offset), self.text.get_height() + 2 * (
+                                  self.padding + self.shadow_offset)
 
         self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
 
@@ -188,7 +241,8 @@ class button:
             pygame.draw.rect(self.screen, self.background_colour, self.rect)
 
         self.screen.blit(self.text_shadow,
-                         (self.position[0] + self.padding + self.shadow, self.position[1] + self.padding + self.shadow))
+                         (self.position[0] + self.padding + self.shadow_offset,
+                          self.position[1] + self.padding + self.shadow_offset))
         self.screen.blit(self.text, (self.position[0] + self.padding, self.position[1] + self.padding))
 
     def is_pressed(self, mx, my):
@@ -247,6 +301,7 @@ def scramble(cc, length):
     moves = [random.randint(0, 5) for x in range(length)]
     power = [random.randint(1, 3) for x in range(length)]
     cc.move(moves, power)
+
 
 def generate(screen):
     running = True
@@ -351,5 +406,7 @@ def main_menu(screen):
         pygame.display.update()
 
 
-image = cube(scaling=6)
-main_menu(screen)
+t = text()
+t.get_lines("this is a completely new test", 80)
+# image = cube(scaling=6)
+# main_menu(screen)
