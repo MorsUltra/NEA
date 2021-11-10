@@ -140,9 +140,11 @@ class text:
 
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
-    def __init__(self, screen, text, position, size=40, rounded=True, background_colour=(0, 0, 0),
+    def __init__(self, screen, t, position, size=40, rounded=True, background_colour=(0, 0, 0),
                  text_colour=(255, 255, 255), padding=False, max_width=None):
         self.font = pygame.font.Font(self.font_path, size)
+
+        self.size = size
 
         self.screen = screen
 
@@ -157,34 +159,34 @@ class text:
 
         self.text_colour = text_colour
 
-        self.text = text
+        self.text = t
 
         if max_width:
-            self.get_lines(text, max_width)  # TODO Properly implement the get lines function for word wrapping
-
+            self.lines = self.get_lines(t,
+                                        max_width)  # TODO Properly implement the get lines function for word wrapping
+            print(self.lines)
         else:
-            self.text = self.font.render(text, False, self.text_colour)
+            self.text = self.font.render(t, False, self.text_colour)
 
     def get_lines(self, text, max_width):
-        font = pygame.font.Font(self.font_path, 20)
+        font = pygame.font.Font(self.font_path, self.size)
         lines = []
 
         while text:
-            print(lines)
-            for i, letter in enumerate(text):
-
-                t = font.render(text[:i], False, (255, 255, 255))
-                size = t.get_width() + 2 * self.padding
+            for i, letter in enumerate(text): # some daft fucking bug I have no idea what do about it
+                f = font.render(text[:i], False, (255, 255, 255))
+                size = f.get_width() + 2 * self.padding
                 if size >= max_width:
                     lines.append(text[:i - 1])
                     text = text[i - 1:]
                     break
+
                 if i + 1 == len(text):
                     lines.append(text)
-                    text = None
+                    del text
                     break
 
-        print(lines)
+        return lines
 
 
 class button:
@@ -406,7 +408,7 @@ def main_menu(screen):
         pygame.display.update()
 
 
-t = text()
-t.get_lines("this is a completely new test", 80)
-# image = cube(scaling=6)
+image = cube(scaling=6)
+t = text(screen, "this is a completely new test", (20, 20), size=20, max_width=200)
+
 # main_menu(screen)
