@@ -41,6 +41,8 @@ class cube():
         self.y_constant = 1
         self.x = 72 * scaling
         self.y = 81 * scaling
+        self.moves = []
+        self.power = []
 
         if static:
             self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
@@ -61,7 +63,12 @@ class cube():
             raw = raw.replace(face, self.colours[i][0])
         return raw
 
+    def get_scramble(self):
+        return " ".join(["".join(map(str, tup)) for tup in zip([self.sides[move] for move in self.moves], self.power)])
+
     def move(self, moves, power):
+        self.moves += moves
+        self.power += power
         self.cubiecube.MOVE_arr(moves, power)
         self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
         self.urf = self.get_urf(self.string)
@@ -141,7 +148,8 @@ class text:
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
     def __init__(self, screen, t, position, size=40, rounded=True, background_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255), padding=False, max_width=None):
+                 text_colour=(255, 255, 255), padding=0, max_width=None):
+
         self.font = pygame.font.Font(self.font_path, size)
 
         self.size = size
@@ -162,31 +170,45 @@ class text:
         self.text = t
 
         if max_width:
-            self.lines = self.get_lines(t,
-                                        max_width)  # TODO Properly implement the get lines function for word wrapping
-            print(self.lines)
+            self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
+                          self.get_lines(self.text, max_width)]
         else:
-            self.text = self.font.render(t, False, self.text_colour)
+            self.lines = [self.font.render(t, False, self.text_colour)]
 
-    def get_lines(self, text, max_width):
+    def get_y(self):
+        ys = max([line.get_height() for line in self.lines])
+        return ys
+
+    def get_x(self):
+        xs = max([line.get_width() for line in self.lines])
+        return xs
+
+    def get_lines(self, t, max_width):
         font = pygame.font.Font(self.font_path, self.size)
         lines = []
 
-        while text:
-            for i, letter in enumerate(text): # some daft fucking bug I have no idea what do about it
-                f = font.render(text[:i], False, (255, 255, 255))
+        while t:
+            for i, letter in enumerate(t):
+                f = font.render(t[:i], False, (255, 255, 255))
                 size = f.get_width() + 2 * self.padding
                 if size >= max_width:
-                    lines.append(text[:i - 1])
-                    text = text[i - 1:]
+                    lines.append(t[:i - 1])
+                    t = t[i - 1:]
                     break
 
-                if i + 1 == len(text):
-                    lines.append(text)
-                    del text
-                    break
+                if i + 1 == len(t):
+                    lines.append(t)
+                    return lines
 
-        return lines
+    def draw(self):
+        for y, line in enumerate(self.lines):
+            pygame.draw.rect(self.screen, self.background_colour,
+                             pygame.Rect(self.position[0], self.position[1] + self.size * y + 2 * self.padding * y,
+                                         line.get_width() + self.padding * 2, line.get_height() + self.padding * 2),
+                             border_radius=int(min(line.get_size()) / 4))
+            self.screen.blit(line,
+                             (self.position[0] + self.padding,
+                              self.position[1] + self.size * y + self.padding * (2 * y + 1)))
 
 
 class button:
@@ -310,6 +332,7 @@ def generate(screen):
     POS = (screen_width - 900, 50)
     SCALING = 11
 
+    s = None
     cc = cube(static=POS, scaling=SCALING)
 
     escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
@@ -317,7 +340,18 @@ def generate(screen):
     scramble_cube = button(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
                            shadow_colour=(0, 0, 255))
 
-    objects = [scramble_cube]
+    title = text(screen, "Scramble:", (50, 50), size=50, background_colour=(60, 60, 60),
+                 text_colour=(0, 0, 255))
+
+    s_pos = (50, title.position[1] + title.get_y() + title.padding * 2 + 20)
+    s_size = 40
+    s_bgcolour = (60, 60, 60)
+    s_txtcolour = (0, 255, 255)
+    s = text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour)
+
+    clickable = []
+
+    objects = [scramble_cube, title]
 
     click = False
 
@@ -335,15 +369,18 @@ def generate(screen):
 
             if scramble_cube.is_pressed(mx, my):
                 cc = cube(static=POS, scaling=SCALING)
-                scramble(cc, 10)
+                scramble(cc, 30)
 
-            for obj in objects:
+                s = text(screen, cc.get_scramble(), s_pos, size=s_size, background_colour=s_bgcolour,
+                         text_colour=s_txtcolour, max_width=900)
+
+            for obj in clickable:
                 if obj.is_pressed(mx, my):
                     obj.activate(screen)
 
-        cc.draw(screen)
-
         escape.draw()
+        cc.draw(screen)
+        s.draw()
 
         for obj in objects:  # draw out the objects
             obj.draw()
@@ -370,6 +407,8 @@ def main_menu(screen):
 
     generate_cube = button(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
 
+    clickable = [solve_cube, generate_cube]
+
     objects = [solve_cube, generate_cube]
 
     click = False
@@ -385,7 +424,7 @@ def main_menu(screen):
 
         if click:
 
-            for obj in objects:
+            for obj in clickable:
                 if obj.is_pressed(mx, my):
                     obj.activate(screen)
 
@@ -409,6 +448,5 @@ def main_menu(screen):
 
 
 image = cube(scaling=6)
-t = text(screen, "this is a completely new test", (20, 20), size=20, max_width=200)
 
-# main_menu(screen)
+main_menu(screen)
