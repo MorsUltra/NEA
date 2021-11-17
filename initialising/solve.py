@@ -77,6 +77,7 @@ class solver:
                     self.final_solutions.append([moves, powers])
 
                 self.phase1_searcher.q.task_done()
+                 # testing on refactoring
 
     def checker(self):
         while self._running:
