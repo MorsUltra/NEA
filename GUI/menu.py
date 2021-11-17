@@ -268,9 +268,8 @@ class button:
     def dummy(self, screen):
         return
 
-    def draw_with_image(self):
-        screen.blit(self.image, self.position)
-        # TODO make a button subclass for images, buttons, escapes, etc.
+    def draw(self):
+        pass
 
     def draw_no_image(self):
         if self.rounded:
@@ -289,6 +288,79 @@ class button:
             return True
         else:
             return False
+
+class ImageButton(button):
+    def __init__(self, screen, position, text, size=40, padding=None, rounded=True,
+                 shadow_colour=(0, 0, 0),
+                 text_colour=(255, 255, 255),
+                 background_colour=(0, 0, 0),
+                 function=None, image=False):
+
+        self.font = pygame.font.Font(self.font_path, size)
+
+        self.screen = screen
+
+        self.rounded = rounded
+
+        self.position = position
+
+        if not image:
+            if padding:
+                self.padding = padding
+
+            self.shadow_colour = shadow_colour
+            self.text_colour = text_colour
+            self.background_colour = background_colour
+
+            self.text = text
+
+            self.text = self.font.render(text, False, self.text_colour)
+            self.text_shadow = self.font.render(text, False, self.shadow_colour)
+
+            self.dimensions = self.text.get_width() + 2 * (
+                    self.padding + self.shadow_offset), self.text.get_height() + 2 * (
+                                      self.padding + self.shadow_offset)
+
+            self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
+
+            self.draw = self.draw_no_image
+
+        # This is a test of some hot shit
+        # else:
+        #     self.image_path = image
+        #     self.image = pygame.image.load(self.image_path).convert()
+        #     self.draw = self.draw_with_image
+
+        if function:
+            self.activate = function
+        else:
+            self.activate = self.dummy
+
+    def draw_with_image(self):
+        screen.blit(self.image, self.position)
+        # TODO make a button subclass for images, buttons, escapes, etc.
+
+
+class TextButton(button):
+    def __init__(self, screen, position, text, size=40, padding=None, rounded=True,
+                 shadow_colour=(0, 0, 0),
+                 text_colour=(255, 255, 255),
+                 background_colour=(0, 0, 0),
+                 function=None, image=False):
+        pass
+
+    def draw_no_image(self):
+        if self.rounded:
+            pygame.draw.rect(self.screen, self.background_colour, self.rect,
+                             border_radius=int(min(self.dimensions) / 4))
+        else:
+            pygame.draw.rect(self.screen, self.background_colour, self.rect)
+
+        self.screen.blit(self.text_shadow,
+                         (self.position[0] + self.padding + self.shadow_offset,
+                          self.position[1] + self.padding + self.shadow_offset))
+        self.screen.blit(self.text, (self.position[0] + self.padding, self.position[1] + self.padding))
+
 
 
 def solve(screen):
