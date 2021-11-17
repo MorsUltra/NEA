@@ -254,10 +254,11 @@ class button:
 
             self.draw = self.draw_no_image
 
-        else:
-            self.image_path = image
-            self.image = pygame.image.load(self.image_path).convert()
-            self.draw = self.draw_with_image
+        # This is a test of some hot shit
+        # else:
+        #     self.image_path = image
+        #     self.image = pygame.image.load(self.image_path).convert()
+        #     self.draw = self.draw_with_image
 
         if function:
             self.activate = function
