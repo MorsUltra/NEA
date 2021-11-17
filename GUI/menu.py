@@ -1,12 +1,14 @@
-import random
-import pygame
-import sys
-from pygame.locals import *
 import os
+import random
+import sys
+
+import pygame
+from pygame.locals import *
+
 from GUI.pygame_facelets import load
+from definitions.cubedefs import urf_facelet_indices
 from definitions.cubie_cube import cubiecube, MOVES as m
 from definitions.facelet_cube import facelet_cube
-from definitions.cubedefs import urf_facelet_indices
 
 screen_width = 1920
 screen_height = 1080
@@ -221,7 +223,7 @@ class button:
                  shadow_colour=(0, 0, 0),
                  text_colour=(255, 255, 255),
                  background_colour=(0, 0, 0),
-                 function=None):
+                 function=None, image=False):
 
         self.font = pygame.font.Font(self.font_path, size)
 
@@ -229,25 +231,33 @@ class button:
 
         self.rounded = rounded
 
-        if padding:
-            self.padding = padding
-
         self.position = position
 
-        self.shadow_colour = shadow_colour
-        self.text_colour = text_colour
-        self.background_colour = background_colour
+        if not image:
+            if padding:
+                self.padding = padding
 
-        self.text = text
+            self.shadow_colour = shadow_colour
+            self.text_colour = text_colour
+            self.background_colour = background_colour
 
-        self.text = self.font.render(text, False, self.text_colour)
-        self.text_shadow = self.font.render(text, False, self.shadow_colour)
+            self.text = text
 
-        self.dimensions = self.text.get_width() + 2 * (
-                self.padding + self.shadow_offset), self.text.get_height() + 2 * (
-                                  self.padding + self.shadow_offset)
+            self.text = self.font.render(text, False, self.text_colour)
+            self.text_shadow = self.font.render(text, False, self.shadow_colour)
 
-        self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
+            self.dimensions = self.text.get_width() + 2 * (
+                    self.padding + self.shadow_offset), self.text.get_height() + 2 * (
+                                      self.padding + self.shadow_offset)
+
+            self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
+
+            self.draw = self.draw_no_image
+
+        else:
+            self.image_path = image
+            self.image = pygame.image.load(self.image_path).convert()
+            self.draw = self.draw_with_image
 
         if function:
             self.activate = function
@@ -257,7 +267,11 @@ class button:
     def dummy(self, screen):
         return
 
-    def draw(self):
+    def draw_with_image(self):
+        screen.blit(self.image, self.position)
+        # TODO make a button subclass for images, buttons, escapes, etc.
+
+    def draw_no_image(self):
         if self.rounded:
             pygame.draw.rect(self.screen, self.background_colour, self.rect,
                              border_radius=int(min(self.dimensions) / 4))
