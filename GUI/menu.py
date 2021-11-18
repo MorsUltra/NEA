@@ -53,7 +53,7 @@ class cube():
                                     random.randint(1, screen_height - self.y - 1),
                                     self.x, self.y)
 
-        resources = os.getcwd() + r"/lib"
+        resources = os.getcwd() + r"\lib\facelets"
 
         self.top, self.left, self.right = load(resources)
 
@@ -144,13 +144,11 @@ class cube():
     #     self.urf = self.get_urf()
 
 
-class text:
-    padding = 7
-
+class Text:
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
-    def __init__(self, screen, t, position, size=40, rounded=True, background_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255), padding=0, max_width=None):
+    def __init__(self, screen, text, position, size=40, rounded=True, background_colour=(0, 0, 0),
+                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True):
 
         self.font = pygame.font.Font(self.font_path, size)
 
@@ -160,8 +158,9 @@ class text:
 
         self.rounded = rounded
 
-        if padding:
-            self.padding = padding
+        self.background = background
+
+        self.max_width = max_width
 
         self.position = position
 
@@ -169,13 +168,24 @@ class text:
 
         self.text_colour = text_colour
 
-        self.text = t
+        self.text = text
+
+        self.padding = padding if background else 0
 
         if max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
                           self.get_lines(self.text, max_width)]
         else:
-            self.lines = [self.font.render(t, False, self.text_colour)]
+            self.lines = [self.font.render(text, False, self.text_colour)]
+
+    def update_text(self, text):
+        self.text = text
+
+        if self.max_width:
+            self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
+                          self.get_lines(self.text, self.max_width)]
+        else:
+            self.lines = [self.font.render(text, False, self.text_colour)]
 
     def get_y(self):
         ys = max([line.get_height() for line in self.lines])
@@ -204,75 +214,111 @@ class text:
 
     def draw(self):
         for y, line in enumerate(self.lines):
-            pygame.draw.rect(self.screen, self.background_colour,
-                             pygame.Rect(self.position[0], self.position[1] + self.size * y + 2 * self.padding * y,
-                                         line.get_width() + self.padding * 2, line.get_height() + self.padding * 2),
-                             border_radius=int(min(line.get_size()) / 4))
+            if self.background:
+                pygame.draw.rect(self.screen, self.background_colour,
+                                 pygame.Rect(self.position[0], self.position[1] + self.size * y + 2 * self.padding * y,
+                                             line.get_width() + self.padding * 2, line.get_height() + self.padding * 2),
+                                 border_radius=int(min(line.get_size()) / 4))
+
             self.screen.blit(line,
                              (self.position[0] + self.padding,
                               self.position[1] + self.size * y + self.padding * (2 * y + 1)))
 
 
-class button:
+class Button:
     shadow_offset = 5
     padding = 10
 
-    font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
-
-    def __init__(self, screen, position, text, size=40, padding=None, rounded=True,
-                 shadow_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255),
-                 background_colour=(0, 0, 0),
-                 function=None, image=False):
-
-        self.font = pygame.font.Font(self.font_path, size)
-
+    def __init__(self, screen, position, function=None):
         self.screen = screen
-
-        self.rounded = rounded
 
         self.position = position
 
-        if not image:
-            if padding:
-                self.padding = padding
-
-            self.shadow_colour = shadow_colour
-            self.text_colour = text_colour
-            self.background_colour = background_colour
-
-            self.text = text
-
-            self.text = self.font.render(text, False, self.text_colour)
-            self.text_shadow = self.font.render(text, False, self.shadow_colour)
-
-            self.dimensions = self.text.get_width() + 2 * (
-                    self.padding + self.shadow_offset), self.text.get_height() + 2 * (
-                                      self.padding + self.shadow_offset)
-
-            self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
-
-            self.draw = self.draw_no_image
-
-        # This is a test of some hot shit
-        # else:
-        #     self.image_path = image
-        #     self.image = pygame.image.load(self.image_path).convert()
-        #     self.draw = self.draw_with_image
-
         if function:
             self.activate = function
-        else:
-            self.activate = self.dummy
 
-    def dummy(self, screen):
-        return
+    def activate(self):
+        """Default activation - no action"""
+        pass
 
-    def draw_with_image(self):
-        screen.blit(self.image, self.position)
+    # --------------- Abstract methods ------------------ #
+
+    def is_clicked(self):
+        """Abstract method for subclass override"""
+        pass
+
+    def draw(self):
+        """Abstract method for subclass override"""
+        pass
+
+
+class ImageButton(Button):
+    def __init__(self, screen, position, image_path, scaling=0, rotation=0, function=None):
+        super().__init__(screen, position, function)
+
+        self.scaling = scaling if scaling else 1
+
+        self.image = pygame.image.load(image_path).convert()
+        self.image.set_colorkey((0, 0, 0))
+
+        if scaling:
+            self.scale_image(scaling)
+
+        if rotation:
+            self.rotate_image(rotation)
+
+    def rotate_image(self, rotation):
+        self.image = pygame.transform.rotate(self.image, rotation)
+
+    def scale_image(self, scaling):
+        x, y = self.image.get_size()
+        self.image = pygame.transform.scale(self.image, (int(x * self.scaling), int(y * self.scaling)))
+
+    def draw(self):
+        self.screen.blit(self.image, self.position)
         # TODO make a button subclass for images, buttons, escapes, etc.
 
-    def draw_no_image(self):
+
+class TextButton(Button):
+    shadow_offset = 5
+    padding = 10
+    size = 40
+
+    font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
+
+    font = pygame.font.Font(font_path, size)
+
+    def __init__(self, screen, position, text, size=0, padding=None, rounded=True, shadow_colour=(0, 0, 0),
+                 text_colour=(255, 255, 255), background_colour=(0, 0, 0), function=None):
+        super().__init__(screen, position, function)
+
+        if padding:
+            self.padding = padding
+
+        if size:
+            self.size = size
+            self.font = pygame.font.Font(self.font_path, size)
+
+        self.text_colour = text_colour
+
+        self.text = self.font.render(text, False, self.text_colour)
+
+        self.size = size if size else 40
+
+        self.rounded = rounded
+
+        self.shadow_colour = shadow_colour
+
+        self.background_colour = background_colour
+
+        self.text_shadow = self.font.render(text, False, self.shadow_colour)
+
+        self.dimensions = self.text.get_width() + 2 * (
+                self.padding + self.shadow_offset), self.text.get_height() + 2 * (self.padding + self.shadow_offset)
+
+        self.rect = pygame.Rect(*self.position, *self.dimensions)
+
+    def draw(self):
         if self.rounded:
             pygame.draw.rect(self.screen, self.background_colour, self.rect,
                              border_radius=int(min(self.dimensions) / 4))
@@ -284,8 +330,10 @@ class button:
                           self.position[1] + self.padding + self.shadow_offset))
         self.screen.blit(self.text, (self.position[0] + self.padding, self.position[1] + self.padding))
 
+        self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
+
     def is_pressed(self, mx, my):
-        if self.rect.collidepoint((mx, my)):  # if mouse is over button
+        if self.rect.collidepoint((mx, my)):
             return True
         else:
             return False
@@ -293,7 +341,7 @@ class button:
 
 def solve(screen):
     running = True
-    escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))  # keep escape seperate
+    escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
     click = False
 
@@ -350,23 +398,32 @@ def generate(screen):
     s = None
     cc = cube(static=POS, scaling=SCALING)
 
-    escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
+    escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
-    scramble_cube = button(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
-                           shadow_colour=(0, 0, 255))
+    scramble_cube = TextButton(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
+                               shadow_colour=(0, 0, 255))
 
-    title = text(screen, "Scramble:", (50, 50), size=50, background_colour=(60, 60, 60),
+    title = Text(screen, "Scramble:", (50, 50), size=50,
                  text_colour=(0, 0, 255))
 
     s_pos = (50, title.position[1] + title.get_y() + title.padding * 2 + 20)
     s_size = 40
-    s_bgcolour = (60, 60, 60)
+    s_bgcolour = (40, 43, 48)
     s_txtcolour = (0, 255, 255)
-    s = text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour)
+
+    s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour, max_width=900)
+
+    barrow = ImageButton(screen, (50, 820), r"C:\Programs\Pycharm\Projects\NEA\GUI\lib\arrows\barrow.png", scaling=15)
+    rarrow = ImageButton(screen, (500, 820), r"C:\Programs\Pycharm\Projects\NEA\GUI\lib\arrows\rarrow.png", scaling=15,
+                         rotation=180)
+
+    n = Text(screen, "25", (0, 876), background=False, size=80)
+
+    n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
 
     clickable = []
 
-    objects = [scramble_cube, title]
+    objects = [scramble_cube, title, barrow, rarrow, n]
 
     click = False
 
@@ -386,8 +443,9 @@ def generate(screen):
                 cc = cube(static=POS, scaling=SCALING)
                 scramble(cc, 30)
 
-                s = text(screen, cc.get_scramble(), s_pos, size=s_size, background_colour=s_bgcolour,
-                         text_colour=s_txtcolour, max_width=900)
+                s.update_text(cc.get_scramble())
+                # s = Text(screen, cc.get_scramble(), s_pos, size=s_size, background_colour=s_bgcolour,
+                #          text_colour=s_txtcolour, max_width=900)
 
             for obj in clickable:
                 if obj.is_pressed(mx, my):
@@ -418,9 +476,9 @@ def generate(screen):
 
 
 def main_menu(screen):
-    solve_cube = button(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
+    solve_cube = TextButton(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
 
-    generate_cube = button(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
+    generate_cube = TextButton(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
 
     clickable = [solve_cube, generate_cube]
 
@@ -443,7 +501,7 @@ def main_menu(screen):
                 if obj.is_pressed(mx, my):
                     obj.activate(screen)
 
-        for obj in objects:  # draw out the objects
+        for obj in objects:
             obj.draw()
 
         click = False

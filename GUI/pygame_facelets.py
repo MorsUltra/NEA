@@ -1,6 +1,6 @@
-from GUI import lib as lib
 import os
 import pygame
+
 
 def load(path):
     top = {}
@@ -18,7 +18,6 @@ def load(path):
 
     for c in [top, left, right]:
         for facelet in c:
-
-            c[facelet].set_colorkey((0, 0,0))
+            c[facelet].set_colorkey((0, 0, 0))
 
     return top, left, right
