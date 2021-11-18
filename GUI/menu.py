@@ -213,65 +213,73 @@ class text:
                               self.position[1] + self.size * y + self.padding * (2 * y + 1)))
 
 
-class button:
+class Button:
+    shadow_offset = 5
+    padding = 10
+
+    def __init__(self, screen, position, function=None):
+        self.screen = screen
+
+        self.position = position
+
+        if function:
+            self.activate = function
+
+    def activate(self):
+        """Default activation - no action"""
+        pass
+
+    # --------------- Abstract methods ------------------ #
+
+    def is_clicked(self):
+        """Abstract method for subclass override"""
+        pass
+
+    def draw(self):
+        """Abstract method for subclass override"""
+        pass
+
+
+class ImageButton(Button):
+    def __init__(self, screen, position, image_path, scaling=0, function=None):
+        super().__init__(screen, position, function)
+
+        self.image_path = image_path
+
+        self.scaling = scaling if scaling else None
+
+    def draw(self):
+        screen.blit(self.image, self.position)
+        # TODO make a button subclass for images, buttons, escapes, etc.
+
+
+class TextButton(Button):
     shadow_offset = 5
     padding = 10
 
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
-    def __init__(self, screen, position, text, size=40, padding=None, rounded=True,
-                 shadow_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255),
-                 background_colour=(0, 0, 0),
-                 function=None, image=False):
+    def __init__(self, screen, position, text, size=0, padding=None, rounded=True, shadow_colour=(0, 0, 0),
+                 text_colour=(255, 255, 255), background_colour=(0, 0, 0), function=None):
+        super().__init__(screen, position, function)
 
-        self.font = pygame.font.Font(self.font_path, size)
+        self.text = text
 
-        self.screen = screen
+        self.size = size if size else 40
 
         self.rounded = rounded
 
-        self.position = position
+        self.shadow_colour = shadow_colour
 
-        if not image:
-            if padding:
-                self.padding = padding
+        self.text_colour = text_colour
 
-            self.shadow_colour = shadow_colour
-            self.text_colour = text_colour
-            self.background_colour = background_colour
+        self.background_colour = background_colour
 
-            self.text = text
 
-            self.text = self.font.render(text, False, self.text_colour)
-            self.text_shadow = self.font.render(text, False, self.shadow_colour)
-
-            self.dimensions = self.text.get_width() + 2 * (
-                    self.padding + self.shadow_offset), self.text.get_height() + 2 * (
-                                      self.padding + self.shadow_offset)
-
-            self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
-
-            self.draw = self.draw_no_image
-
-        # This is a test of some hot shit
-        # else:
-        #     self.image_path = image
-        #     self.image = pygame.image.load(self.image_path).convert()
-        #     self.draw = self.draw_with_image
-
-        if function:
-            self.activate = function
-        else:
-            self.activate = self.dummy
-
-    def dummy(self, screen):
-        return
+        if padding:
+            self.padding = padding
 
     def draw(self):
-        pass
-
-    def draw_no_image(self):
         if self.rounded:
             pygame.draw.rect(self.screen, self.background_colour, self.rect,
                              border_radius=int(min(self.dimensions) / 4))
@@ -282,90 +290,11 @@ class button:
                          (self.position[0] + self.padding + self.shadow_offset,
                           self.position[1] + self.padding + self.shadow_offset))
         self.screen.blit(self.text, (self.position[0] + self.padding, self.position[1] + self.padding))
-
-    def is_pressed(self, mx, my):
-        if self.rect.collidepoint((mx, my)):  # if mouse is over button
-            return True
-        else:
-            return False
-
-class ImageButton(button):
-    def __init__(self, screen, position, text, size=40, padding=None, rounded=True,
-                 shadow_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255),
-                 background_colour=(0, 0, 0),
-                 function=None, image=False):
-
-        self.font = pygame.font.Font(self.font_path, size)
-
-        self.screen = screen
-
-        self.rounded = rounded
-
-        self.position = position
-
-        if not image:
-            if padding:
-                self.padding = padding
-
-            self.shadow_colour = shadow_colour
-            self.text_colour = text_colour
-            self.background_colour = background_colour
-
-            self.text = text
-
-            self.text = self.font.render(text, False, self.text_colour)
-            self.text_shadow = self.font.render(text, False, self.shadow_colour)
-
-            self.dimensions = self.text.get_width() + 2 * (
-                    self.padding + self.shadow_offset), self.text.get_height() + 2 * (
-                                      self.padding + self.shadow_offset)
-
-            self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
-
-            self.draw = self.draw_no_image
-
-        # This is a test of some hot shit
-        # else:
-        #     self.image_path = image
-        #     self.image = pygame.image.load(self.image_path).convert()
-        #     self.draw = self.draw_with_image
-
-        if function:
-            self.activate = function
-        else:
-            self.activate = self.dummy
-
-    def draw_with_image(self):
-        screen.blit(self.image, self.position)
-        # TODO make a button subclass for images, buttons, escapes, etc.
-
-
-class TextButton(button):
-    def __init__(self, screen, position, text, size=40, padding=None, rounded=True,
-                 shadow_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255),
-                 background_colour=(0, 0, 0),
-                 function=None, image=False):
-        pass
-
-    def draw_no_image(self):
-        if self.rounded:
-            pygame.draw.rect(self.screen, self.background_colour, self.rect,
-                             border_radius=int(min(self.dimensions) / 4))
-        else:
-            pygame.draw.rect(self.screen, self.background_colour, self.rect)
-
-        self.screen.blit(self.text_shadow,
-                         (self.position[0] + self.padding + self.shadow_offset,
-                          self.position[1] + self.padding + self.shadow_offset))
-        self.screen.blit(self.text, (self.position[0] + self.padding, self.position[1] + self.padding))
-
 
 
 def solve(screen):
     running = True
-    escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))  # keep escape seperate
+    escape = Button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))  # keep escape seperate
 
     click = False
 
@@ -422,9 +351,9 @@ def generate(screen):
     s = None
     cc = cube(static=POS, scaling=SCALING)
 
-    escape = button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
+    escape = Button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
-    scramble_cube = button(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
+    scramble_cube = Button(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
                            shadow_colour=(0, 0, 255))
 
     title = text(screen, "Scramble:", (50, 50), size=50, background_colour=(60, 60, 60),
@@ -490,9 +419,9 @@ def generate(screen):
 
 
 def main_menu(screen):
-    solve_cube = button(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
+    solve_cube = Button(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
 
-    generate_cube = button(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
+    generate_cube = Button(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
 
     clickable = [solve_cube, generate_cube]
 
