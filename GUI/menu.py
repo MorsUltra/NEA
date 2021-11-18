@@ -212,6 +212,16 @@ class text:
                              (self.position[0] + self.padding,
                               self.position[1] + self.size * y + self.padding * (2 * y + 1)))
 
+    def draw(self):
+        for y, line in enumerate(self.lines):
+            pygame.draw.rect(self.screen, self.background_colour,
+                             pygame.Rect(self.position[0], self.position[1] + self.size * y + 2 * self.padding * y,
+                                         line.get_width() + self.padding * 2, line.get_height() + self.padding * 2),
+                             border_radius=int(min(line.get_size()) / 4))
+            self.screen.blit(line,
+                             (self.position[0] + self.padding,
+                              self.position[1] + self.size * y + self.padding * (2 * y + 1)))
+
 
 class Button:
     shadow_offset = 5
@@ -256,14 +266,26 @@ class ImageButton(Button):
 class TextButton(Button):
     shadow_offset = 5
     padding = 10
+    size = 40
 
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
+
+    font = pygame.font.Font(font_path, size)
 
     def __init__(self, screen, position, text, size=0, padding=None, rounded=True, shadow_colour=(0, 0, 0),
                  text_colour=(255, 255, 255), background_colour=(0, 0, 0), function=None):
         super().__init__(screen, position, function)
 
-        self.text = text
+        if padding:
+            self.padding = padding
+
+        if size:
+            self.size = size
+            self.font = pygame.font.Font(self.font_path, size)
+
+        self.text_colour = text_colour
+
+        self.text = self.font.render(text, False, self.text_colour)
 
         self.size = size if size else 40
 
@@ -271,13 +293,14 @@ class TextButton(Button):
 
         self.shadow_colour = shadow_colour
 
-        self.text_colour = text_colour
-
         self.background_colour = background_colour
 
+        self.text_shadow = self.font.render(text, False, self.shadow_colour)
 
-        if padding:
-            self.padding = padding
+        self.dimensions = self.text.get_width() + 2 * (
+                self.padding + self.shadow_offset), self.text.get_height() + 2 * (self.padding + self.shadow_offset)
+
+        self.rect = pygame.Rect(*self.position, *self.dimensions)
 
     def draw(self):
         if self.rounded:
@@ -291,10 +314,18 @@ class TextButton(Button):
                           self.position[1] + self.padding + self.shadow_offset))
         self.screen.blit(self.text, (self.position[0] + self.padding, self.position[1] + self.padding))
 
+        self.rect = pygame.Rect(self.position[0], self.position[1], self.dimensions[0], self.dimensions[1])
+
+    def is_pressed(self, mx, my):
+        if self.rect.collidepoint((mx, my)):
+            return True
+        else:
+            return False
+
 
 def solve(screen):
     running = True
-    escape = Button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))  # keep escape seperate
+    escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
     click = False
 
@@ -351,9 +382,9 @@ def generate(screen):
     s = None
     cc = cube(static=POS, scaling=SCALING)
 
-    escape = Button(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
+    escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
-    scramble_cube = Button(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
+    scramble_cube = TextButton(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
                            shadow_colour=(0, 0, 255))
 
     title = text(screen, "Scramble:", (50, 50), size=50, background_colour=(60, 60, 60),
@@ -419,9 +450,9 @@ def generate(screen):
 
 
 def main_menu(screen):
-    solve_cube = Button(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
+    solve_cube = TextButton(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
 
-    generate_cube = Button(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
+    generate_cube = TextButton(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
 
     clickable = [solve_cube, generate_cube]
 
