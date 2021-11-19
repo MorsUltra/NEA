@@ -20,7 +20,26 @@ screen.fill((40, 43, 48))
 clock = pygame.time.Clock()
 
 
-class cube():
+class Counter:
+    def __init__(self, starting):
+        self._counter = starting
+
+    def __iadd__(self, other):
+        self._counter += other
+
+    def increment(self):
+        self._counter += 1
+        print("changing")
+
+    def decrement(self):
+        self._counter -= 1
+        print("changing")
+
+    def __str__(self):
+        return str(self._counter)
+
+
+class Cube:
     colours = ["White",
                "Green",
                "Red",
@@ -148,7 +167,7 @@ class Text:
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
     def __init__(self, screen, text, position, size=40, rounded=True, background_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True):
+                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True, track_variable=False):
 
         self.font = pygame.font.Font(self.font_path, size)
 
@@ -172,14 +191,22 @@ class Text:
 
         self.padding = padding if background else 0
 
+        self.variable = track_variable
+
         if max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
                           self.get_lines(self.text, max_width)]
         else:
             self.lines = [self.font.render(text, False, self.text_colour)]
 
-    def update_text(self, text):
-        self.text = text
+    def update_text(self, text=None):
+
+        if self.variable:
+            self.text = str(self.variable)
+        else:
+            self.text = text
+
+        # TODO some minor bug with rendering the text. Everything else seems to work. Could do with a cleanup though
 
         if self.max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
@@ -229,21 +256,23 @@ class Button:
     shadow_offset = 5
     padding = 10
 
-    def __init__(self, screen, position, function=None):
+    def __init__(self, screen, position, functions=None):
+        if functions:
+            self.__functions__ = functions
+        else:
+            self.__functions__ = []
+
         self.screen = screen
 
         self.position = position
 
-        if function:
-            self.activate = function
-
-    def activate(self):
-        """Default activation - no action"""
-        pass
+    def run(self):
+        for function in self.__functions__:
+            function()
 
     # --------------- Abstract methods ------------------ #
 
-    def is_clicked(self):
+    def is_pressed(self):
         """Abstract method for subclass override"""
         pass
 
@@ -253,8 +282,8 @@ class Button:
 
 
 class ImageButton(Button):
-    def __init__(self, screen, position, image_path, scaling=0, rotation=0, function=None):
-        super().__init__(screen, position, function)
+    def __init__(self, screen, position, image_path, scaling=0, rotation=0, functions=None):
+        super().__init__(screen, position, functions)
 
         self.scaling = scaling if scaling else 1
 
@@ -278,6 +307,13 @@ class ImageButton(Button):
         self.screen.blit(self.image, self.position)
         # TODO make a button subclass for images, buttons, escapes, etc.
 
+    def is_pressed(self, mx, my):
+        rect = self.image.get_rect()
+        rect.x, rect.y = self.position[0], self.position[1]
+        if rect.collidepoint(mx, my):
+            return True
+        return False
+
 
 class TextButton(Button):
     shadow_offset = 5
@@ -289,8 +325,8 @@ class TextButton(Button):
     font = pygame.font.Font(font_path, size)
 
     def __init__(self, screen, position, text, size=0, padding=None, rounded=True, shadow_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255), background_colour=(0, 0, 0), function=None):
-        super().__init__(screen, position, function)
+                 text_colour=(255, 255, 255), background_colour=(0, 0, 0), functions=None):
+        super().__init__(screen, position, functions)
 
         if padding:
             self.padding = padding
@@ -339,7 +375,7 @@ class TextButton(Button):
             return False
 
 
-def solve(screen):
+def solve():
     running = True
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
@@ -361,7 +397,7 @@ def solve(screen):
 
             for obj in objects:
                 if obj.is_pressed(mx, my):
-                    obj.activate(screen)
+                    obj.run(screen)
 
         for obj in objects:
             obj.draw()
@@ -390,13 +426,12 @@ def scramble(cc, length):
     cc.move(moves, power)
 
 
-def generate(screen):
+def generate():
     running = True
     POS = (screen_width - 900, 50)
     SCALING = 11
 
-    s = None
-    cc = cube(static=POS, scaling=SCALING)
+    cc = Cube(static=POS, scaling=SCALING)
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
@@ -413,15 +448,19 @@ def generate(screen):
 
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour, max_width=900)
 
-    barrow = ImageButton(screen, (50, 820), r"C:\Programs\Pycharm\Projects\NEA\GUI\lib\arrows\barrow.png", scaling=15)
-    rarrow = ImageButton(screen, (500, 820), r"C:\Programs\Pycharm\Projects\NEA\GUI\lib\arrows\rarrow.png", scaling=15,
-                         rotation=180)
+    path = os.getcwd() + "\lib"
+    cnt = Counter(27)
 
-    n = Text(screen, "25", (0, 876), background=False, size=80)
+    n = Text(screen, str(cnt), (0, 876), background=False, size=80, track_variable=cnt)
+
+    barrow = ImageButton(screen, (50, 820), path + r"\arrows\barrow.png", scaling=15,
+                         functions=[cnt.decrement, n.update_text])
+    rarrow = ImageButton(screen, (500, 820), path + r"\arrows\rarrow.png", scaling=15,
+                         rotation=180, functions=[cnt.increment, n.update_text])
 
     n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
 
-    clickable = []
+    clickable = [barrow, rarrow]
 
     objects = [scramble_cube, title, barrow, rarrow, n]
 
@@ -440,16 +479,14 @@ def generate(screen):
                 running = False
 
             if scramble_cube.is_pressed(mx, my):
-                cc = cube(static=POS, scaling=SCALING)
+                cc = Cube(static=POS, scaling=SCALING)
                 scramble(cc, 30)
 
                 s.update_text(cc.get_scramble())
-                # s = Text(screen, cc.get_scramble(), s_pos, size=s_size, background_colour=s_bgcolour,
-                #          text_colour=s_txtcolour, max_width=900)
 
             for obj in clickable:
                 if obj.is_pressed(mx, my):
-                    obj.activate(screen)
+                    obj.run()
 
         escape.draw()
         cc.draw(screen)
@@ -475,10 +512,10 @@ def generate(screen):
         pygame.display.update()
 
 
-def main_menu(screen):
-    solve_cube = TextButton(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), function=solve)
+def main_menu():
+    solve_cube = TextButton(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), functions=[solve])
 
-    generate_cube = TextButton(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), function=generate)
+    generate_cube = TextButton(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), functions=[generate])
 
     clickable = [solve_cube, generate_cube]
 
@@ -499,7 +536,7 @@ def main_menu(screen):
 
             for obj in clickable:
                 if obj.is_pressed(mx, my):
-                    obj.activate(screen)
+                    obj.run()
 
         for obj in objects:
             obj.draw()
@@ -520,6 +557,6 @@ def main_menu(screen):
         pygame.display.update()
 
 
-image = cube(scaling=6)
+image = Cube(scaling=6)
 
-main_menu(screen)
+main_menu()
