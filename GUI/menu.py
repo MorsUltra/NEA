@@ -21,23 +21,34 @@ clock = pygame.time.Clock()
 
 
 class Counter:
-    def __init__(self, starting):
+    def __init__(self, starting, upper_limit=float("inf"), lower_limit=0):
         self._counter = starting
+        self._q = lower_limit
+        self._p = upper_limit
+
+    def _check_bounds(self):
+        if self._counter < self._q:
+            self._counter = self._q
+        elif self._counter > self._p:
+            self._counter = self._p
 
     def __iadd__(self, other):
         self._counter += other
+        self._check_bounds()
 
     def increment(self):
         self._counter += 1
-        print("changing")
+        self._check_bounds()
 
     def decrement(self):
         self._counter -= 1
-        print("changing")
+        self._check_bounds()
 
     def __str__(self):
         return str(self._counter)
 
+    def get_size(self):
+        return self._counter
 
 class Cube:
     colours = ["White",
@@ -195,7 +206,6 @@ class Text:
             self.lines = [self.font.render(text, False, self.text_colour)]
 
     def update_text(self, text=None):
-
         if self.variable:
             self.text = str(self.variable)
         else:
@@ -205,7 +215,7 @@ class Text:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
                           self.get_lines(self.text, self.max_width)]
         else:
-            self.lines = [self.font.render(text, False, self.text_colour)]
+            self.lines = [self.font.render(self.text, False, self.text_colour)]
 
     def get_y(self):
         ys = max([line.get_height() for line in self.lines])
@@ -442,7 +452,7 @@ def generate():
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour, max_width=900)
 
     path = os.getcwd() + "\lib"
-    cnt = Counter(27)
+    cnt = Counter(25, lower_limit=1)
 
     n = Text(screen, str(cnt), (0, 876), background=False, size=80, track_variable=cnt)
 
@@ -473,7 +483,7 @@ def generate():
 
             if scramble_cube.is_pressed(mx, my):
                 cc = Cube(static=POS, scaling=SCALING)
-                scramble(cc, 30)
+                scramble(cc, cnt.get_size())
 
                 s.update_text(cc.get_scramble())
 
