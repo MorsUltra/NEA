@@ -157,11 +157,6 @@ class Cube:
         image = pygame.transform.scale(image, (int(x * self.scaling), int(y * self.scaling)))
         return image
 
-    # def scramble(self):
-    #     self.cubiecube.shuffle()
-    #     self.string = self.cubiecube.to_facelet_cube(facelet_cube())
-    #     self.urf = self.get_urf()
-
 
 class Text:
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
@@ -205,8 +200,6 @@ class Text:
             self.text = str(self.variable)
         else:
             self.text = text
-
-        # TODO some minor bug with rendering the text. Everything else seems to work. Could do with a cleanup though
 
         if self.max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
@@ -462,7 +455,7 @@ def generate():
 
     clickable = [barrow, rarrow]
 
-    objects = [scramble_cube, title, barrow, rarrow, n]
+    objects = [scramble_cube, title, barrow, rarrow, n, s, escape]
 
     click = False
 
@@ -488,12 +481,10 @@ def generate():
                 if obj.is_pressed(mx, my):
                     obj.run()
 
-        escape.draw()
-        cc.draw(screen)
-        s.draw()
-
         for obj in objects:  # draw out the objects
             obj.draw()
+
+        cc.draw(screen)
 
         click = False
         for event in pygame.event.get():
