@@ -308,7 +308,6 @@ class ImageButton(Button):
 
     def draw(self):
         self.screen.blit(self.image, self.position)
-        # TODO make a button subclass for images, buttons, escapes, etc.
 
     def is_pressed(self, mx, my):
         rect = self.image.get_rect()
@@ -462,6 +461,8 @@ def generate():
                          rotation=180, functions=[cnt.increment, n.update_text])
 
     n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
+
+    # TODO Throw in another button to track current scramble into the solver.
 
     clickable = [barrow, rarrow]
 
