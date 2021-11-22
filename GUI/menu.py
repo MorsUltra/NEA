@@ -50,6 +50,7 @@ class Counter:
     def get_size(self):
         return self._counter
 
+
 class Cube:
     colours = ["White",
                "Green",
@@ -62,11 +63,10 @@ class Cube:
 
     moves = dict(zip(sides, m))
 
-    def __init__(self, static=False, scaling=1):
-        self.cubiecube = cubiecube()
+    def __init__(self, static=False, scaling=1, cc=None):  # TODO fix this horrible code you moron. Static type checking
+        self.cubiecube = cc if cc else cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.urf = self.get_urf(self.string)
-
         self.scaling = scaling
         self.loop_cnt = 0
         self.x_constant = 1
@@ -110,7 +110,7 @@ class Cube:
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.urf = self.get_urf(self.string)
 
-    def dynamic_draw(self, screen):
+    def dynamic_draw(self):
         corners = [self.rect.topleft, self.rect.topright, self.rect.bottomleft, self.rect.bottomright]
 
         for coord in corners:
@@ -136,9 +136,13 @@ class Cube:
 
         self.rect.move_ip(1 * self.x_constant, 1 * self.y_constant)
 
-        self.draw(screen)
+        self.draw()
 
-    def draw(self, screen):
+    def draw_whole(self):
+        # TODO implement this future me
+        pass
+
+    def draw(self):
         rectx = self.rect.x
         recty = self.rect.y
 
@@ -377,11 +381,16 @@ class TextButton(Button):
             return False
 
 
-def solve():
+def solve(cc=None):
     running = True
+
+    cube = Cube(static=(400, 400), scaling=6, cc=cc) if cc else Cube(static=(400, 400), scaling=6)
+
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
     click = False
+
+    drawable = [escape, cube]
 
     objects = []
 
@@ -392,21 +401,19 @@ def solve():
 
         mx, my = pygame.mouse.get_pos()
 
-        image.dynamic_draw(screen)
         if click:
             if escape.is_pressed(mx, my):
                 running = False
 
             for obj in objects:
                 if obj.is_pressed(mx, my):
-                    obj.run(screen)
+                    obj.run()
 
-        for obj in objects:
+        for obj in drawable:
             obj.draw()
 
-        escape.draw()
-
         click = False
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -431,7 +438,7 @@ def scramble(cc, length):
 def generate():
     running = True
     POS = (screen_width - 900, 50)
-    SCALING = 11
+    SCALING = 10
 
     cc = Cube(static=POS, scaling=SCALING)
 
@@ -439,6 +446,9 @@ def generate():
 
     scramble_cube = TextButton(screen, (screen_width - 540, screen_height - 100), "Scramble cube", 43,
                                shadow_colour=(0, 0, 255))
+
+    solve_cube = TextButton(screen, (screen_width - 540, screen_height - 200), "Solve cube", 43,
+                            shadow_colour=(0, 0, 255))
 
     title = Text(screen, "Scramble:", (50, 50), size=50,
                  text_colour=(0, 0, 255))
@@ -466,7 +476,7 @@ def generate():
 
     clickable = [barrow, rarrow]
 
-    objects = [scramble_cube, title, barrow, rarrow, n, s, escape]
+    objects = [scramble_cube, solve_cube, title, barrow, rarrow, n, s, escape]
 
     click = False
 
@@ -482,11 +492,15 @@ def generate():
             if escape.is_pressed(mx, my):
                 running = False
 
-            if scramble_cube.is_pressed(mx, my):
+            elif scramble_cube.is_pressed(mx, my):
                 cc = Cube(static=POS, scaling=SCALING)
                 scramble(cc, cnt.get_size())
 
                 s.update_text(cc.get_scramble())
+
+            elif solve_cube.is_pressed(mx, my):
+                solve(cc.cubiecube)
+                # TODO implementation here
 
             for obj in clickable:
                 if obj.is_pressed(mx, my):
@@ -495,7 +509,7 @@ def generate():
         for obj in objects:  # draw out the objects
             obj.draw()
 
-        cc.draw(screen)
+        cc.draw()
 
         click = False
         for event in pygame.event.get():
@@ -515,11 +529,11 @@ def generate():
 
 
 def main_menu():
-    solve_cube = TextButton(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0), functions=[solve])
+    solve_cube = TextButton(screen, (40, 40), "solve cube", shadow_colour=(255, 0, 0))
 
     generate_cube = TextButton(screen, (40, 150), "generate cube", shadow_colour=(0, 255, 0), functions=[generate])
 
-    clickable = [solve_cube, generate_cube]
+    clickable = [generate_cube]
 
     objects = [solve_cube, generate_cube]
 
@@ -530,7 +544,7 @@ def main_menu():
 
         screen.fill((40, 43, 48))
 
-        image.dynamic_draw(screen)
+        image.dynamic_draw()
 
         mx, my = pygame.mouse.get_pos()
 
@@ -539,6 +553,9 @@ def main_menu():
             for obj in clickable:
                 if obj.is_pressed(mx, my):
                     obj.run()
+
+            if solve_cube.is_pressed(mx, my):
+                solve()
 
         for obj in objects:
             obj.draw()

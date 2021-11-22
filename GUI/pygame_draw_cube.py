@@ -3,6 +3,8 @@ from pygame.locals import *
 from .pygame_facelets import load
 from definitions.cubedefs import urf_facelet_indices, raw_colours
 
+print("HACKED!!!")
+
 resources = r"C:\Programming\NEA\GUI\lib"
 
 width = 100
