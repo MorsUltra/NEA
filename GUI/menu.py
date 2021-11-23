@@ -143,6 +143,10 @@ class Cube:
         pass
 
     def draw(self):
+        # TODO going to have to find a better way to do this. Not universal enough.
+        # Maybe have some sort of a system for all faces using normal indexing but can just turn faces on/off.
+        # Just print faces in normal positions, but just turn off B, L, and D faces when printing normal cube.
+        # Fuck. 
         rectx = self.rect.x
         recty = self.rect.y
 
