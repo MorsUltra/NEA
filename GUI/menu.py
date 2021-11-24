@@ -66,7 +66,6 @@ class Cube:
     def __init__(self, static=False, scaling=1, cc=None):  # TODO fix this horrible code you moron. Static type checking
         self.cubiecube = cc if cc else cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
-        self.urf = self.get_urf(self.string)
         self.scaling = scaling
         self.loop_cnt = 0
         self.x_constant = 1
@@ -85,7 +84,7 @@ class Cube:
 
         resources = os.getcwd() + r"\lib\facelets"
 
-        self.top, self.left, self.right = load(resources)
+        self.facelets = load(resources)
 
     def get_urf(self, string):
         return self.set_colours("".join([string[c] for c in urf_facelet_indices]))
@@ -103,12 +102,10 @@ class Cube:
         self.power += power
         self.cubiecube.MOVE_arr(moves, power)
         self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
-        self.urf = self.get_urf(self.string)
 
     def shuffle(self):
         self.cubiecube.shuffle()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
-        self.urf = self.get_urf(self.string)
 
     def dynamic_draw(self):
         corners = [self.rect.topleft, self.rect.topright, self.rect.bottomleft, self.rect.bottomright]
@@ -149,6 +146,20 @@ class Cube:
         # Fuck. 
         rectx = self.rect.x
         recty = self.rect.y
+
+        print(self.facelets)
+        for i, colour in self.facelets:
+            match colour // 9: # finds the side
+                case 0: # up
+                    image = self.facelets[]
+                    image = self.scale(image)
+                    # dimensions of image before scaling: 24 x 6
+                    screen.blit(image, (rectx + 23 * self.scaling + x * 12 * self.scaling - y * 12 * self.scaling,
+                                        recty + -1 * self.scaling + x * 6 * self.scaling + y * 6 * self.scaling))
+
+
+
+
 
         for i, face in enumerate(self.urf):
             side = i // 9

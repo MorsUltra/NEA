@@ -1,23 +1,20 @@
 import os
+
 import pygame
 
 
-def load(path):
-    top = {}
-    left = {}
-    right = {}
+def load_facelets(path):
+    facelets = [[[] * 6] * 6]
     for f in os.listdir(path):
-        if f.endswith(".png"):
-            fpath = os.path.join(path, f)
-            if f.startswith("t"):
-                top[f[1:-4][0]] = pygame.image.load(fpath).convert()
-            elif f.startswith("l"):
-                left[f[1:-4][0]] = pygame.image.load(fpath).convert()
-            elif f.startswith("r"):
-                right[f[1:-4][0]] = pygame.image.load(fpath).convert()
+        axes = f[0]
+        colour = f[1]
+        fpath = os.path.join(path, f)
+        image = pygame.image.load(fpath)
+        image.set_colorkey((0, 0, 0))
+        facelets[axes][colour] = image
 
-    for c in [top, left, right]:
-        for facelet in c:
-            c[facelet].set_colorkey((0, 0, 0))
+    facelets[2] = facelets[3]
+    facelets[5] = facelets[0]
+    facelets[4] = facelets[0]
 
-    return top, left, right
+    return facelets
