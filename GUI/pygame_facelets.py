@@ -4,10 +4,10 @@ import pygame
 
 
 def load_facelets(path):
-    facelets = [[[] * 6] * 6]
+    facelets = [[None] * 6 for _ in range(6)]
     for f in os.listdir(path):
-        axes = f[0]
-        colour = f[1]
+        axes = int(f[0])
+        colour = int(f[1])
         fpath = os.path.join(path, f)
         image = pygame.image.load(fpath)
         image.set_colorkey((0, 0, 0))

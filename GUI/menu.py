@@ -5,7 +5,7 @@ import sys
 import pygame
 from pygame.locals import *
 
-from GUI.pygame_facelets import load
+from GUI.pygame_facelets import load_facelets as load
 from definitions.cubedefs import urf_facelet_indices
 from definitions.cubie_cube import cubiecube, MOVES as m
 from definitions.facelet_cube import facelet_cube
@@ -59,24 +59,28 @@ class Cube:
                "Yellow",
                "Blue"]
 
-    sides = ["U", "F", "R", "L", "D", "B"]
+    sides = ["U", "R", "L", "F", "B", "D"]
+
+    converter = dict(zip(sides, range(0, 6)))
 
     moves = dict(zip(sides, m))
 
-    def __init__(self, static=False, scaling=1, cc=None):  # TODO fix this horrible code you moron. Static type checking
+    def __init__(self, static=False, scaling=1, cc=None,
+                 show_all=False):
         self.cubiecube = cc if cc else cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.convert_string_int()
         self.scaling = scaling
-        self.loop_cnt = 0
         self.x_constant = 1
         self.y_constant = 1
         self.x = 72 * scaling
         self.y = 81 * scaling
         self.moves = []
         self.power = []
+        self._mode = show_all
 
         if static:
-            self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
+            self.rect = pygame.Rect(*static, self.x, self.y)
         else:
             self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1),
                                     random.randint(1, screen_height - self.y - 1),
@@ -86,6 +90,17 @@ class Cube:
 
         self.facelets = load(resources)
 
+    def change_scaling(self, scaling):
+        self.scaling = scaling
+        self.x = 72 * scaling
+        self.y = 81 * scaling
+
+    def move_cube(self, static):
+        self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
+
+    def toggle_mode(self):
+        self._mode = False if self._mode else True
+
     def get_urf(self, string):
         return self.set_colours("".join([string[c] for c in urf_facelet_indices]))
 
@@ -94,18 +109,26 @@ class Cube:
             raw = raw.replace(face, self.colours[i][0])
         return raw
 
+    def convert_string_int(self):
+        self.string = [self.converter[l] for l in self.string]
+
     def get_scramble(self):
-        return " ".join(["".join(map(str, tup)) for tup in zip([self.sides[move] for move in self.moves], self.power)])
+        raw = " ".join(["".join(map(str, tup)) for tup in zip([self.sides[move] for move in self.moves], self.power)])
+        raw = raw.replace("3", "'")
+        raw = raw.replace("1", "")
+        return raw
 
     def move(self, moves, power):
         self.moves += moves
         self.power += power
         self.cubiecube.MOVE_arr(moves, power)
         self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
+        self.convert_string_int()
 
     def shuffle(self):
         self.cubiecube.shuffle()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.convert_string_int()
 
     def dynamic_draw(self):
         corners = [self.rect.topleft, self.rect.topright, self.rect.bottomleft, self.rect.bottomright]
@@ -135,52 +158,39 @@ class Cube:
 
         self.draw()
 
-    def draw_whole(self):
-        # TODO implement this future me
-        pass
-
     def draw(self):
         # TODO going to have to find a better way to do this. Not universal enough.
         # Maybe have some sort of a system for all faces using normal indexing but can just turn faces on/off.
         # Just print faces in normal positions, but just turn off B, L, and D faces when printing normal cube.
         # Fuck. 
-        rectx = self.rect.x
-        recty = self.rect.y
+        rectx = self.rect.x + 23 * self.scaling
+        recty = self.rect.y - 1 * self.scaling
 
-        print(self.facelets)
-        for i, colour in self.facelets:
-            match colour // 9: # finds the side
-                case 0: # up
-                    image = self.facelets[]
-                    image = self.scale(image)
-                    # dimensions of image before scaling: 24 x 6
-                    screen.blit(image, (rectx + 23 * self.scaling + x * 12 * self.scaling - y * 12 * self.scaling,
-                                        recty + -1 * self.scaling + x * 6 * self.scaling + y * 6 * self.scaling))
-
-
-
-
-
-        for i, face in enumerate(self.urf):
-            side = i // 9
-            x = i % 3
-            y = (i // 3) % 3
-            if side == 0:
-                image = self.top[face.lower()]
-                image = self.scale(image)
-                # dimensions of image before scaling: 24 x 6
-                screen.blit(image, (rectx + 23 * self.scaling + x * 12 * self.scaling - y * 12 * self.scaling,
-                                    recty + -1 * self.scaling + x * 6 * self.scaling + y * 6 * self.scaling))
-            elif side == 1:
-                image = self.right[face.lower()]
-                image = self.scale(image)
-                screen.blit(image, (rectx + 35 * self.scaling + x * 12 * self.scaling,
-                                    recty + 29 * self.scaling - x * 6 * self.scaling + y * 15 * self.scaling))
-            elif side == 2:
-                image = self.left[face.lower()]
-                image = self.scale(image)
-                screen.blit(image, (rectx + -1 * self.scaling + x * 12 * self.scaling,
-                                    recty + 17 * self.scaling + x * 6 * self.scaling + y * 15 * self.scaling))
+        for i, colour in enumerate(self.string):
+            image = self.facelets[i // 9][colour]
+            image = self.scale(image)
+            relative_side = i % 9
+            x = relative_side % 3
+            y = relative_side // 3
+            match i // 9:  # finds the side
+                case 0:
+                    screen.blit(image, (rectx + x * 12 * self.scaling - y * 12 * self.scaling,
+                                        recty + x * 6 * self.scaling + y * 6 * self.scaling))
+                case 1:
+                    screen.blit(image, (12 * self.scaling + rectx + x * 12 * self.scaling,
+                                        30 * self.scaling + recty - x * 6 * self.scaling + y * 15 * self.scaling))
+                case 2 if self._mode:
+                    screen.blit(image, (-60 * self.scaling + rectx + x * 12 * self.scaling,
+                                        recty + x * 6 * self.scaling + y * 15 * self.scaling))
+                case 3:
+                    screen.blit(image, (-24 * self.scaling + rectx + x * 12 * self.scaling,
+                                        18 * self.scaling + recty + x * 6 * self.scaling + y * 15 * self.scaling))
+                case 4 if self._mode:
+                    screen.blit(image, (36 * self.scaling + rectx - 12 * self.scaling * x + 12 * self.scaling * y,
+                                        6 * self.scaling + recty - 6 * self.scaling * x - 6 * self.scaling * y))
+                case 5 if self._mode:
+                    screen.blit(image, (-36 * self.scaling + rectx + x * 12 * self.scaling - y * 12 * self.scaling,
+                                        63 * self.scaling + recty + x * 6 * self.scaling + y * 6 * self.scaling))
 
     def scale(self, image):
         x, y = image.get_size()
@@ -397,9 +407,9 @@ class TextButton(Button):
 
 
 def solve(cc=None):
-    running = True
+    cube = Cube(static=(400, 400), scaling=6, show_all=True, cc=cc) if cc else Cube(static=(400, 400), scaling=6, show_all=True)
 
-    cube = Cube(static=(400, 400), scaling=6, cc=cc) if cc else Cube(static=(400, 400), scaling=6)
+    running = True
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
 
@@ -476,7 +486,7 @@ def generate():
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour, max_width=900)
 
     path = os.getcwd() + "\lib"
-    cnt = Counter(25, lower_limit=1)
+    cnt = Counter(1, lower_limit=1)
 
     n = Text(screen, str(cnt), (0, 876), background=False, size=80, track_variable=cnt)
 

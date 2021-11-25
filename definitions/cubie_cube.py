@@ -332,7 +332,7 @@ Dmove = cubiecube(cp=cpD, co=coD, ep=epD, eo=eoD)
 MOVES = [Umove,
          Rmove,
          Lmove,
-         Dmove,
          Fmove,
-         Bmove]
+         Bmove,
+         Dmove]
 cubiecube.moves = MOVES
