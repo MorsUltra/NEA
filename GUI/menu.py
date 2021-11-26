@@ -9,6 +9,7 @@ from GUI.pygame_facelets import load_facelets as load
 from definitions.cubedefs import urf_facelet_indices
 from definitions.cubie_cube import cubiecube, MOVES as m
 from definitions.facelet_cube import facelet_cube
+from initialising.solve import solver
 
 screen_width = 1920
 screen_height = 1080
@@ -66,7 +67,7 @@ class Cube:
     moves = dict(zip(sides, m))
 
     def __init__(self, static=False, scaling=1, cc=None,
-                 show_all=False):
+                 show_all=False, solve=False):
         self.cubiecube = cc if cc else cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.convert_string_int()
@@ -86,6 +87,10 @@ class Cube:
                                     random.randint(1, screen_height - self.y - 1),
                                     self.x, self.y)
 
+        if solver:
+            self.solver = solver(self.cubiecube, multithreading=True)
+            self.solutions=[]
+
         resources = os.getcwd() + r"\lib\facelets"
 
         self.facelets = load(resources)
@@ -94,6 +99,12 @@ class Cube:
         self.scaling = scaling
         self.x = 72 * scaling
         self.y = 81 * scaling
+
+    def solve(self):
+        print("solving")
+        self.solver.find_solutions()
+        self.solutions.append(self.solver.final_solutions)
+        print(self.solutions)
 
     def move_cube(self, static):
         self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
@@ -349,22 +360,18 @@ class ImageButton(Button):
 class TextButton(Button):
     shadow_offset = 5
     padding = 10
-    size = 40
 
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
-    font = pygame.font.Font(font_path, size)
-
-    def __init__(self, screen, position, text, size=0, padding=None, rounded=True, shadow_colour=(0, 0, 0),
+    def __init__(self, screen, position, text, size=40, padding=None, rounded=True, shadow_colour=(0, 0, 0),
                  text_colour=(255, 255, 255), background_colour=(0, 0, 0), functions=None):
         super().__init__(screen, position, functions)
 
         if padding:
             self.padding = padding
 
-        if size:
-            self.size = size
-            self.font = pygame.font.Font(self.font_path, size)
+        self.size = size
+        self.font = pygame.font.Font(self.font_path, size)
 
         self.text_colour = text_colour
 
@@ -407,15 +414,26 @@ class TextButton(Button):
 
 
 def solve(cc=None):
-    cube = Cube(static=(400, 400), scaling=6, show_all=True, cc=cc) if cc else Cube(static=(400, 400), scaling=6, show_all=True)
+    cube = Cube(static=(300, 160), scaling=7, show_all=True, cc=cc, solve=True) if cc else Cube(static=(300, 160),
+                                                                                                scaling=7,
+                                                                                                show_all=True,
+                                                                                                solve=True)
+
+    step1 = Cube(static=(900, 300), scaling=5)
+    step2 = Cube(static=(1300, 360), scaling=4)
+    step3 = Cube(static=(1625, 420), scaling=3)
 
     running = True
 
-    escape = TextButton(screen, (screen_width - 215, 20), "Escape", 30, shadow_colour=(200, 0, 0))
+    escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
+
+    solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0), functions=[cube.solve])
+
+    input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
 
     click = False
 
-    drawable = [escape, cube]
+    drawable = [escape, cube, solve_cube, input_cube, step1, step2, step3]
 
     objects = []
 
@@ -486,7 +504,7 @@ def generate():
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour, max_width=900)
 
     path = os.getcwd() + "\lib"
-    cnt = Counter(1, lower_limit=1)
+    cnt = Counter(24, lower_limit=1)
 
     n = Text(screen, str(cnt), (0, 876), background=False, size=80, track_variable=cnt)
 
@@ -496,8 +514,6 @@ def generate():
                          rotation=180, functions=[cnt.increment, n.update_text])
 
     n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
-
-    # TODO Throw in another button to track current scramble into the solver.
 
     clickable = [barrow, rarrow]
 

@@ -1,10 +1,8 @@
 from definitions.facelet_cube import facelet_cube
 from definitions.cubie_cube import cubiecube
-from table_init import tables
+from initialising.table_init import tables
 import queue
 import threading
-import random
-import time
 
 
 class solver:
@@ -24,7 +22,7 @@ class solver:
         self.phase1_thread = threading.Thread(target=self.phase1_searcher.find_solutions)
         self.phase2_worker_threads = [threading.Thread(target=self.phase2_worker) for _ in range(workers)]
 
-    def get_solutions(self):
+    def find_solutions(self):
         if self.multithreading:
             self.multi_thread_search()
 
@@ -258,5 +256,5 @@ c = cubiecube()
 c.shuffle()
 
 s = solver(c, multithreading=False, workers=10)
-s.get_solutions()
+s.find_solutions()
 print(s.final_solutions)
