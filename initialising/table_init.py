@@ -41,6 +41,8 @@ class tables:
         self.P4edge_P8edge_Ptable = []
         self.P4edge_Pcorner_Ptable = []
 
+        print(table_file_path)
+
         if os.path.isfile(table_file_path) and load:
             print("loading lookup tables")
 

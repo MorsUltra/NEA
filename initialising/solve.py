@@ -1,3 +1,4 @@
+import time
 from definitions.facelet_cube import facelet_cube
 from definitions.cubie_cube import cubiecube
 from initialising.table_init import tables
@@ -75,11 +76,10 @@ class solver:
                     self.final_solutions.append([moves, powers])
 
                 self.phase1_searcher.q.task_done()
-                 # testing on refactoring
 
     def checker(self):
         while self._running:
-            print(threading.current_thread())
+            print("phase1_searching status:", self.phase1_thread.is_alive())
             if not self.phase1_thread.is_alive() and not self.phase1_searcher.q.unfinished_tasks:
                 self.terminate()
 
@@ -120,7 +120,7 @@ class phase_searcher:
 
         return axis, moves_power
 
-    def find_solutions(self, single=False):  # TODO need a "find first" system where it will break on finding the first solution
+    def find_solutions(self, single=False):
         for lower_bound in range(self.max):
             n = self.ida(0, lower_bound)
             if n > 0:
@@ -256,5 +256,9 @@ c = cubiecube()
 c.shuffle()
 
 s = solver(c, multithreading=False, workers=10)
+print("finding solutions")
 s.find_solutions()
+time.sleep(3)
 print(s.final_solutions)
+# TODO There are some bugs with multithreading and thread hanging
+# Need to find a work around. I think the queue's need reworking.
