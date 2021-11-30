@@ -35,18 +35,6 @@ class solver:
             cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
                            moves=phase1_solution)  # TODO what is this you moron, the moves are going wrong
 
-            print(self.phase1_searcher.t.Oedge_table[0])
-            print(self.phase1_searcher.t.Ocorner_table[0])
-            print(self.phase1_searcher.t.POSud_slice_table[0])
-            print()
-            print(self.phase1_searcher.h_costs)
-            print()
-            print(self.phase1_searcher.coord1)
-            print(self.phase1_searcher.coord2)
-            print(self.phase1_searcher.coord3)
-            print()
-            print(phase1_solution)
-
             phase2_solver = self.phase2_searcher(cc)
             self.phase2_searchers.append(phase2_solver)
             phase2_solver.find_solutions(single=True)
@@ -262,25 +250,33 @@ class phase2(phase_searcher):
 
         return -1
 
-
-defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB DDD DDD DDD",
-        "random": "BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL"}
-
-c = facelet_cube(defs["random"].replace(" ", ""))
-c = c.to_cubeie_cube(cubiecube())
-
+# defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB DDD DDD DDD",
+#         "random": "BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL"}
+#
+# c = facelet_cube(defs["random"].replace(" ", ""))
+# c = c.to_cubeie_cube(cubiecube())
+#
+# c.shuffle()
 # moves = ([0, 4, 5, 1, 4, 0, 3, 5, 3, 2], [2, 2, 2, 3, 3, 1, 3, 3, 3, 1])
 # c.MOVE_arr(*moves)
 
 #
-s = solver(c, multithreading=False, workers=10)
-s.find_solutions()
-# # print("finding solutions")
+# s = solver(c, multithreading=False, workers=10)
 # s.find_solutions()
-# print("finished sleeping")
 # print(s.final_solutions)
-# # # TODO There are some bugs with multithreading and thread hanging
-# t = tables()
 
-# print(t.UDslice_Oedge_pruning_table[c.POSud_slice_coords][c.Oedge_coords])
-# print(t.UDslice_Ocorner_pruning_table[c.POSud_slice_coords][c.Ocorner_coords])
+# import time
+#
+# times = []
+# while True:
+#     try:
+#         c = cubiecube()
+#         c.shuffle()
+#         s = solver(c, multithreading=False, workers=10)
+#         start = time.time()
+#         s.find_solutions()
+#         t = time.time() - start
+#         print(t)
+#         times.append(t)
+#     except KeyboardInterrupt:
+#         print(sum(times) / len(times))

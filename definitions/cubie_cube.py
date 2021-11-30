@@ -17,13 +17,7 @@ class cubiecube:
         self.eo = eo if eo else [0] * 12
 
         if moves:
-            print(self.Ocorner_coords)
-            print(self.Oedge_coords)
-            print(self.POSud_slice_coords)
             self.MOVE_arr(*moves)
-            print(self.Ocorner_coords)
-            print(self.Oedge_coords)
-            print(self.POSud_slice_coords)
 
     def to_data_arr(self):
         return self.cp, self.co, self.ep, self.eo
@@ -53,12 +47,9 @@ class cubiecube:
                 break
 
     def MOVE_arr(self, moves, powers):
-        print(self.Ocorner_coords, self.Oedge_coords)
         for i, move in enumerate(moves):
             for power in range(powers[i]):
                 self.MOVE(MOVES[move])
-            print(self.Ocorner_coords, self.Oedge_coords)
-            # print(self.POSud_slice_coords)
 
     def MOVE(self, to_apply):
         self.Cmove(to_apply)

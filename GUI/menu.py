@@ -87,10 +87,6 @@ class Cube:
                                     random.randint(1, screen_height - self.y - 1),
                                     self.x, self.y)
 
-        if solver:
-            self.solver = solver(self.cubiecube, multithreading=True)
-            self.solutions=[]
-
         resources = os.getcwd() + r"\lib\facelets"
 
         self.facelets = load(resources)
@@ -101,10 +97,12 @@ class Cube:
         self.y = 81 * scaling
 
     def solve(self):
+        import time
         print("solving")
-        self.solver.find_solutions()
-        self.solutions.append(self.solver.final_solutions)
-        print(self.solutions)
+        s = solver(self.cubiecube, multithreading=True)
+        s.find_solutions()
+        time.sleep(5)
+        print(s.final_solutions)
 
     def move_cube(self, static):
         self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
@@ -427,7 +425,8 @@ def solve(cc=None):
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
-    solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0), functions=[cube.solve])
+    solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
+                            functions=[cube.solve])
 
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
 
@@ -435,7 +434,7 @@ def solve(cc=None):
 
     drawable = [escape, cube, solve_cube, input_cube, step1, step2, step3]
 
-    objects = []
+    objects = [solve_cube]
 
     while running:
         clock.tick(400)
@@ -617,13 +616,7 @@ def main_menu():
         pygame.display.update()
 
 
+# apparent hangups with smaller solves?
 image = Cube(scaling=6)
 
-c = facelet_cube("BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL".replace(" ", ""))
-c = c.to_cubeie_cube(cubiecube())
-
-moves = ([0, 4, 5, 1, 4, 0, 3, 5, 3, 2], [2, 2, 2, 3, 3, 1, 3, 3, 3, 1])
-c.MOVE_arr(*moves)
-
-image = Cube(cc=c)
 main_menu()

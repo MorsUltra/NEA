@@ -19,9 +19,9 @@ class tables:
     moves = [Umove,
              Rmove,
              Lmove,
-             Dmove,
              Fmove,
-             Bmove]
+             Bmove,
+             Dmove]  # Why have you changed this you idiot
 
     save_file_name = r"\Pruning tables.npz"
 
@@ -84,10 +84,6 @@ class tables:
 
     @staticmethod
     def save_file(path, data):
-        #
-        # import json
-        # with open('data.json', 'w') as f:
-        #     json.dump(data, f)
         np.savez(path, *data)
 
     def load_file(self, filename):
