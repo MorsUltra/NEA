@@ -1,9 +1,9 @@
-import time
-from definitions.facelet_cube import facelet_cube
-from definitions.cubie_cube import cubiecube
-from initialising.table_init import tables
 import queue
 import threading
+
+from definitions.cubie_cube import cubiecube
+from definitions.facelet_cube import facelet_cube
+from initialising.table_init import tables
 
 
 class solver:
@@ -32,7 +32,20 @@ class solver:
 
             phase1_solution = self.phase1_searcher.q.get()
 
-            cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3], moves=phase1_solution)
+            cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
+                           moves=phase1_solution)  # TODO what is this you moron, the moves are going wrong
+
+            print(self.phase1_searcher.t.Oedge_table[0])
+            print(self.phase1_searcher.t.Ocorner_table[0])
+            print(self.phase1_searcher.t.POSud_slice_table[0])
+            print()
+            print(self.phase1_searcher.h_costs)
+            print()
+            print(self.phase1_searcher.coord1)
+            print(self.phase1_searcher.coord2)
+            print(self.phase1_searcher.coord3)
+            print()
+            print(phase1_solution)
 
             phase2_solver = self.phase2_searcher(cc)
             self.phase2_searchers.append(phase2_solver)
@@ -59,7 +72,8 @@ class solver:
             if not self.phase1_searcher.q.empty():
                 phase1_solution = self.phase1_searcher.q.get()
 
-                cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3], moves=phase1_solution)
+                cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
+                               moves=phase1_solution)
 
                 phase2_searcher = self.phase2_searcher(cc)
                 self.phase2_searchers.append(phase2_searcher)
@@ -79,7 +93,6 @@ class solver:
 
     def checker(self):
         while self._running:
-            print("phase1_searching status:", self.phase1_thread.is_alive())
             if not self.phase1_thread.is_alive() and not self.phase1_searcher.q.unfinished_tasks:
                 self.terminate()
 
@@ -183,6 +196,10 @@ class phase1(phase_searcher):
                         # get the cost of the next node
                         self.h_costs[node_depth + 1] = self.h(node_depth + 1)
 
+                        # print("Corner Orientation", self.coord1)
+                        # print("Edge orientation", self.coord2)
+                        # print("UD slice position", self.coord3)
+
                         # search the next node defined above with the assumption that you can get closer to the target subgroup
                         continue_search = self.ida(node_depth + 1, q - 1)
 
@@ -252,13 +269,18 @@ defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB D
 c = facelet_cube(defs["random"].replace(" ", ""))
 c = c.to_cubeie_cube(cubiecube())
 
-c = cubiecube()
-c.shuffle()
+# moves = ([0, 4, 5, 1, 4, 0, 3, 5, 3, 2], [2, 2, 2, 3, 3, 1, 3, 3, 3, 1])
+# c.MOVE_arr(*moves)
 
+#
 s = solver(c, multithreading=False, workers=10)
-print("finding solutions")
 s.find_solutions()
-time.sleep(3)
-print(s.final_solutions)
-# TODO There are some bugs with multithreading and thread hanging
-# Need to find a work around. I think the queue's need reworking.
+# # print("finding solutions")
+# s.find_solutions()
+# print("finished sleeping")
+# print(s.final_solutions)
+# # # TODO There are some bugs with multithreading and thread hanging
+# t = tables()
+
+# print(t.UDslice_Oedge_pruning_table[c.POSud_slice_coords][c.Oedge_coords])
+# print(t.UDslice_Ocorner_pruning_table[c.POSud_slice_coords][c.Ocorner_coords])

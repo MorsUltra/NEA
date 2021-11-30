@@ -1,7 +1,9 @@
-from definitions.cubedefs import *
 from functools import reduce
 from math import comb as CNK
 from random import randint
+
+from definitions.cubedefs import *
+
 
 class cubiecube:
     MOVES = []
@@ -11,11 +13,17 @@ class cubiecube:
     def __init__(self, cp=None, co=None, ep=None, eo=None, moves=None):
         self.cp = cp if cp else list(range(0, 8))
         self.co = co if co else [0] * 8
-        self.ep = ep if ep else list(range(0, 12))
+        self.ep = ep if ep else list(range(0, 12))  # TODO not sure if you need the list
         self.eo = eo if eo else [0] * 12
 
         if moves:
+            print(self.Ocorner_coords)
+            print(self.Oedge_coords)
+            print(self.POSud_slice_coords)
             self.MOVE_arr(*moves)
+            print(self.Ocorner_coords)
+            print(self.Oedge_coords)
+            print(self.POSud_slice_coords)
 
     def to_data_arr(self):
         return self.cp, self.co, self.ep, self.eo
@@ -45,9 +53,12 @@ class cubiecube:
                 break
 
     def MOVE_arr(self, moves, powers):
+        print(self.Ocorner_coords, self.Oedge_coords)
         for i, move in enumerate(moves):
             for power in range(powers[i]):
                 self.MOVE(MOVES[move])
+            print(self.Ocorner_coords, self.Oedge_coords)
+            # print(self.POSud_slice_coords)
 
     def MOVE(self, to_apply):
         self.Cmove(to_apply)

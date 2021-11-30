@@ -1,6 +1,8 @@
-from definitions.cubie_cube import *
-import numpy as np
 import os
+
+import numpy as np
+
+from definitions.cubie_cube import *
 
 
 class tables:
@@ -82,6 +84,10 @@ class tables:
 
     @staticmethod
     def save_file(path, data):
+        #
+        # import json
+        # with open('data.json', 'w') as f:
+        #     json.dump(data, f)
         np.savez(path, *data)
 
     def load_file(self, filename):

@@ -619,4 +619,11 @@ def main_menu():
 
 image = Cube(scaling=6)
 
+c = facelet_cube("BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL".replace(" ", ""))
+c = c.to_cubeie_cube(cubiecube())
+
+moves = ([0, 4, 5, 1, 4, 0, 3, 5, 3, 2], [2, 2, 2, 3, 3, 1, 3, 3, 3, 1])
+c.MOVE_arr(*moves)
+
+image = Cube(cc=c)
 main_menu()
