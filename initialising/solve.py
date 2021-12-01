@@ -17,7 +17,7 @@ class solver:
 
         self.cc_data = cube.to_data_arr()
 
-        self.final_solutions = []
+        self.final_solutions = [] if multithreading else None
 
         self.phase1_thread = threading.Thread(target=self.phase1_searcher.find_solutions)
         self.phase2_worker_threads = [threading.Thread(target=self.phase2_worker) for _ in range(workers)]
@@ -43,7 +43,7 @@ class solver:
             moves = phase1_solution[0] + phase2_solution[0]
             powers = phase1_solution[1] + phase2_solution[1]
 
-            self.final_solutions.append([moves, powers])
+            self.final_solutions = [moves, powers]
 
     def multi_thread_search(self):
         self.phase1_thread.start()

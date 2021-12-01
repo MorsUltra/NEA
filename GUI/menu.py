@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import threading
 
 import pygame
 from pygame.locals import *
@@ -79,6 +80,7 @@ class Cube:
         self.moves = []
         self.power = []
         self._mode = show_all
+        self.solution = None
 
         if static:
             self.rect = pygame.Rect(*static, self.x, self.y)
@@ -91,18 +93,20 @@ class Cube:
 
         self.facelets = load(resources)
 
+        if solve:
+            self.solve_thread = threading.Thread(target=self.find_solutions)
+
+    def find_solutions(self):
+        s = solver(self.cubiecube, multithreading=False)
+        self.solution = s.find_solutions()
+
+    def solve(self):
+        self.solve_thread.start()
+
     def change_scaling(self, scaling):
         self.scaling = scaling
         self.x = 72 * scaling
         self.y = 81 * scaling
-
-    def solve(self):
-        import time
-        print("solving")
-        s = solver(self.cubiecube, multithreading=True)
-        s.find_solutions()
-        time.sleep(5)
-        print(s.final_solutions)
 
     def move_cube(self, static):
         self.rect = pygame.Rect(static[0], static[1], self.x, self.y)
@@ -281,6 +285,7 @@ class Text:
                     return lines
 
     def draw(self):
+        self.update_text()  # can probably clean this up
         for y, line in enumerate(self.lines):
             if self.background:
                 pygame.draw.rect(self.screen, self.background_colour,
@@ -425,14 +430,15 @@ def solve(cc=None):
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
-    solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
-                            functions=[cube.solve])
-
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
 
+    sol = Text(screen, cube.solution, (400, 400), background_colour=(0, 0, 0), track_variable=cube.solution)
+
+    solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
+                            functions=[cube.solve])
     click = False
 
-    drawable = [escape, cube, solve_cube, input_cube, step1, step2, step3]
+    drawable = [escape, cube, solve_cube, input_cube, step1, step2, step3, sol]
 
     objects = [solve_cube]
 
@@ -500,7 +506,8 @@ def generate():
     s_bgcolour = (40, 43, 48)
     s_txtcolour = (0, 255, 255)
 
-    s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour, max_width=900)
+    s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour,
+             max_width=900)  # TODO think you can update this with variable tracking implementation
 
     path = os.getcwd() + "\lib"
     cnt = Counter(24, lower_limit=1)
