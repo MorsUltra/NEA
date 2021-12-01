@@ -2,7 +2,6 @@ import queue
 import threading
 
 from definitions.cubie_cube import cubiecube
-from definitions.facelet_cube import facelet_cube
 from initialising.table_init import tables
 
 
@@ -249,34 +248,3 @@ class phase2(phase_searcher):
                             return continue_search
 
         return -1
-
-# defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB DDD DDD DDD",
-#         "random": "BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL"}
-#
-# c = facelet_cube(defs["random"].replace(" ", ""))
-# c = c.to_cubeie_cube(cubiecube())
-#
-# c.shuffle()
-# moves = ([0, 4, 5, 1, 4, 0, 3, 5, 3, 2], [2, 2, 2, 3, 3, 1, 3, 3, 3, 1])
-# c.MOVE_arr(*moves)
-
-#
-# s = solver(c, multithreading=False, workers=10)
-# s.find_solutions()
-# print(s.final_solutions)
-
-# import time
-#
-# times = []
-# while True:
-#     try:
-#         c = cubiecube()
-#         c.shuffle()
-#         s = solver(c, multithreading=False, workers=10)
-#         start = time.time()
-#         s.find_solutions()
-#         t = time.time() - start
-#         print(t)
-#         times.append(t)
-#     except KeyboardInterrupt:
-#         print(sum(times) / len(times))
