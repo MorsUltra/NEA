@@ -587,7 +587,7 @@ The gube group **G** therefore, is composed of quintillions of **permutations** 
 
 You can "divide" this permutations up into smaller **subgroups** by some attribute of each permutation, such as corner orientation or position of the edges. In each of these cases we group them by these defining factors and ignore the others. 
 
-One such subgroup is the subgroup we will call H: {
+One such subgroup is the subgroup we will call H:
 
 Let's imagine a solved cube, then restickering it in a such a fashion: 
 
