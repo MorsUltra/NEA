@@ -10,7 +10,6 @@ class solver:
     def __init__(self, cube, multithreading=True, workers=5):
         self._running = True
         self.multithreading = multithreading
-
         self.phase1_searcher = phase1(cube)
         self.phase2_searcher = phase2
         self.phase2_searchers = []

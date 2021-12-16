@@ -22,35 +22,50 @@ Certain turns of the cube's faces do not effect some of these attributes. For in
 With this information, it's possible to split the cube's various states into different groups or *co-sets* that are achievable whilst a constraint has been placed on the moves you can apply to the cube.
 
 # Phase One
-The first group, you only consider the orientation of the corners and edges, as well as the position of the *UD-slice* (UD-slice refers to the edges bounded by the U and D faces) edges (we do not consider how these edges are orientated or positioned, just which edge spaces are occupied by these middle edges).
+The first group, you only consider the orientation of the corners and edges, as well as the position of the edges in
+the *UD-slice* - the positions sandwiched between the U and D faces. You do not consider how these edges are orientated
+or positioned, just which positions are occupied by these middle edges.
 
-This effectively limits both the quantity of data you have to keep tract of when manipulating the cube (for instance, the position of the pieces), and the distance you have to search through to reach the indentity element of this group - a cube where the edges and corners are orientated correctly, and where the UD-slice edges are somewhere in the UD-slice.
+This effectively limits both the quantity of data you have to keep tract of when manipulating the cube (for instance,
+the position of edges and corners are only later considered), and the distance you have to search through to reach the "
+solved" state of this group, or the identity element - a cube where the edges and corners are orientated correctly, and
+where the UD-slice edges - the edges that originate from the UD-slice of a solved cube - are in their home slice.
 
-The aforementioned coorinates are represented in various ways that best suite what they represent:
+The aforementioned coordinates are represented in various ways that are each optimised for their uses:
 
 ### The corner orientation coordinate
-A corner can be orientated one of three ways which therefore warrants a ternary number system as the most fitting method of representing each corner.
 
-**0** implies that the corner is not rotated from its default state (as defined in some basic setup)
-**1** that the corner has been twisted once clockwise
-**2** that the conner has been twisted twice clockwise - this is synonomous with an anti-clockwise rotation.
+A corner can be orientated one of three ways which; a ternary number system is perhaps the most fitting method of
+representing each corner's orientation.
 
-It follows that we can store the orientation of each corner as `ori = ori mod 3` to simplify things. 
+- **0** implies that the corner is not rotated from its default state (as defined in some basic setup)
+- **1** that the corner has been twisted once clockwise
+- **2** that the conner has been twisted twice clockwise - this is synonymous with an anti-clockwise rotation.
 
-To again minimise the size of the numbers required to elements of the group, we can exclude the last corner form our ternary number as for a cube to be reachable throught normal means the sum of all the orientations of the coners most satisfy `sum mod 3 = 0`. Intuitively this means that there is not a singular corner twisted individually, as a turn of the face will always impact 4 corners.
+It follows that we can store the orientation of each corner as `ori = ori mod 3` to ensure that the orientation
+doesn't "grow" as it changes throughout the solve.
 
-The following function reduces the orientation of the corners `[0, 2, 2, 0, 2, 2, 1, 0]` to a ternary number `673` with range `3 pow 7 - 1 = 2186 <---> 0`:
+To minimise the size of the ternary number, we can exclude the last corner, now only using 7 bits, as for a cube to be
+reachable through valid means the sum of all the orientations of the corners (modulo 3) must satisfy `sum modulo 3 = 0`.
+Intuitively this means that there is not a singular corner twisted individually, as a turn of the face will always
+impact 4 corners.
+
+The following function reduces the orientation of the corners to a ternary number within the
+range `3 pow 7 - 1 = 2186 <---> 0`:
+
+`[0, 2, 2, 0, 2, 2, 1, 0] --> 673`
+
 ```python
-@property
-def Ocorner_coords(self):
+def corner_orientation_coordinates(self):
     co = reduce(lambda variable_base, total: 3 * variable_base + total, self.co[:7])
 
     return co
 ```
 
-The following does the opposite, taking the index of the element in the corner orientation co-set of the cube group and computing the orientation of the corners:
+The following does the opposite, taking the index of the element in the corner orientation co-set of the cube group and
+computing the orientation of the corners:
+
 ```python
-@Ocorner_coords.setter
 def Ocorner_coords(self, index):
     parity = 0
     self.co = [-1] * 8

@@ -10,7 +10,7 @@ class cubiecube:
 
     Ocorner_parity_value = [0, 2, 1]
 
-    def __init__(self, cp=None, co=None, ep=None, eo=None, moves=None):
+    def __init__(self, cp: list = None, co: list = None, ep: list = None, eo: list = None, moves=None):
         self.cp = cp if cp else list(range(0, 8))
         self.co = co if co else [0] * 8
         self.ep = ep if ep else list(range(0, 12))  # TODO not sure if you need the list
@@ -19,10 +19,10 @@ class cubiecube:
         if moves:
             self.MOVE_arr(*moves)
 
-    def to_data_arr(self):
+    def to_data_arr(self) -> tuple[list | list, list | list[int], list | list, list | list[int]]:
         return self.cp, self.co, self.ep, self.eo
 
-    def to_facelet_cube(self, fc):
+    def to_facelet_cube(self, fc) -> str:
         for corner in corner_indices:
             for f in range(3):
                 fc.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]
@@ -64,7 +64,7 @@ class cubiecube:
         self.eo = [(self.eo[to_apply.ep[i]] + to_apply.eo[i]) % 2 for i in range(12)]
 
     @property
-    def corner_parity(self):
+    def corner_parity(self) -> int:
         parity = 0
         for q in range(7, 0, -1):
             for corner in self.cp[:q]:
@@ -73,7 +73,7 @@ class cubiecube:
         return parity % 2
 
     @property
-    def edge_parity(self):
+    def edge_parity(self) -> int:
         parity = 0
         for q in range(11, 0, -1):
             for edge in self.ep[:q]:
@@ -83,7 +83,7 @@ class cubiecube:
         return parity % 2
 
     @property
-    def Ocorner_coords(self):  # working
+    def Ocorner_coords(self):
         co = reduce(lambda variable_base, total: 3 * variable_base + total, self.co[:7])
 
         return co
@@ -116,7 +116,7 @@ class cubiecube:
         return index
 
     @Pcorner_coords.setter
-    def Pcorner_coords(self, index):  # working
+    def Pcorner_coords(self, index):
         corners = list(range(8))
         self.cp = [-1] * 8
         coeffs = [0] * 7
@@ -174,8 +174,6 @@ class cubiecube:
 
         self.ep[0] = corners[0]
 
-    # The following are used under the assumption
-    # that the UD slice edges are in the ud slice prior to use.
     # ---------------------------------------------------------
 
     @property
