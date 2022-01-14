@@ -46,11 +46,8 @@ class Counter:
         self._counter -= 1
         self._check_bounds()
 
-    def __str__(self):
-        return str(self._counter)
-
     def get_size(self):
-        return self._counter
+        return str(self._counter)
 
 
 class Cube:
@@ -98,10 +95,15 @@ class Cube:
 
     def find_solutions(self):
         s = solver(self.cubiecube, multithreading=False)
+        print("solving")
         self.solution = s.find_solutions()
+        print("found solution")
 
     def solve(self):
         self.solve_thread.start()
+
+    def get_solutions(self):
+        return self.solution
 
     def change_scaling(self, scaling):
         self.scaling = scaling
@@ -172,10 +174,6 @@ class Cube:
         self.draw()
 
     def draw(self):
-        # TODO going to have to find a better way to do this. Not universal enough.
-        # Maybe have some sort of a system for all faces using normal indexing but can just turn faces on/off.
-        # Just print faces in normal positions, but just turn off B, L, and D faces when printing normal cube.
-        # Fuck. 
         rectx = self.rect.x + 23 * self.scaling
         recty = self.rect.y - 1 * self.scaling
 
@@ -185,7 +183,7 @@ class Cube:
             relative_side = i % 9
             x = relative_side % 3
             y = relative_side // 3
-            match i // 9:  # finds the side
+            match i // 9:
                 case 0:
                     screen.blit(image, (rectx + x * 12 * self.scaling - y * 12 * self.scaling,
                                         recty + x * 6 * self.scaling + y * 6 * self.scaling))
@@ -215,7 +213,7 @@ class Text:
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
     def __init__(self, screen, text, position, size=40, rounded=True, background_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True, track_variable=False):
+                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True, tracking=False, track_target=None):
 
         self.font = pygame.font.Font(self.font_path, size)
 
@@ -239,7 +237,11 @@ class Text:
 
         self.padding = padding if background else 0
 
-        self.variable = track_variable
+        if tracking:
+            self.tracking = True
+            self.variable = track_target
+        else:
+            self.tracking=False
 
         if max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
@@ -248,16 +250,16 @@ class Text:
             self.lines = [self.font.render(text, False, self.text_colour)]
 
     def update_text(self, text=None):
-        if self.variable:
-            self.text = str(self.variable)
-        else:
+        if text:
             self.text = text
+        elif self.tracking:
+            self.text = self.variable()
 
         if self.max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
                           self.get_lines(self.text, self.max_width)]
         else:
-            self.lines = [self.font.render(self.text, False, self.text_colour)]
+            self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
 
     def get_y(self):
         ys = max([line.get_height() for line in self.lines])
@@ -417,7 +419,7 @@ class TextButton(Button):
 
 
 def solve(cc=None):
-    cube = Cube(static=(300, 160), scaling=7, show_all=True, cc=cc, solve=True) if cc else Cube(static=(300, 160),
+    C = Cube(static=(300, 160), scaling=7, show_all=True, cc=cc, solve=True) if cc else Cube(static=(300, 160),
                                                                                                 scaling=7,
                                                                                                 show_all=True,
                                                                                                 solve=True)
@@ -432,13 +434,13 @@ def solve(cc=None):
 
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
 
-    sol = Text(screen, cube.solution, (400, 400), background_colour=(0, 0, 0), track_variable=cube.solution)
+    sol = Text(screen, "NOT SOLVED", (300, 800), background_colour=(0, 0, 0), tracking=True, track_target=C.get_solutions)
 
     solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
-                            functions=[cube.solve])
+                            functions=[C.solve])
     click = False
 
-    drawable = [escape, cube, solve_cube, input_cube, step1, step2, step3, sol]
+    drawable = [escape, C, solve_cube, input_cube, step1, step2, step3, sol]
 
     objects = [solve_cube]
 
@@ -499,7 +501,7 @@ def generate():
                             shadow_colour=(0, 0, 255))
 
     title = Text(screen, "Scramble:", (50, 50), size=50,
-                 text_colour=(0, 0, 255))
+                 text_colour=(0, 255, 255))  # TODO something not working here - title not rendering
 
     s_pos = (50, title.position[1] + title.get_y() + title.padding * 2 + 20)
     s_size = 40
@@ -507,12 +509,12 @@ def generate():
     s_txtcolour = (0, 255, 255)
 
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour,
-             max_width=900)  # TODO think you can update this with variable tracking implementation
+             max_width=900, tracking=True, track_target=cc.get_scramble)
 
     path = os.getcwd() + "\lib"
     cnt = Counter(24, lower_limit=1)
 
-    n = Text(screen, str(cnt), (0, 876), background=False, size=80, track_variable=cnt)
+    n = Text(screen, str(cnt), (0, 876), background=False, size=80, tracking=True, track_target=cnt.get_size) # not rendering this for some reason, no idea. It's probably default values in draw function again...
 
     barrow = ImageButton(screen, (50, 820), path + r"\arrows\barrow.png", scaling=15,
                          functions=[cnt.decrement, n.update_text])
@@ -523,7 +525,7 @@ def generate():
 
     clickable = [barrow, rarrow]
 
-    objects = [scramble_cube, solve_cube, title, barrow, rarrow, n, s, escape]
+    objects = [scramble_cube, solve_cube, title, escape, barrow, rarrow, s, n]
 
     click = False
 
@@ -541,13 +543,11 @@ def generate():
 
             elif scramble_cube.is_pressed(mx, my):
                 cc = Cube(static=POS, scaling=SCALING)
-                scramble(cc, cnt.get_size())
-
-                s.update_text(cc.get_scramble())
+                scramble(cc, int(cnt.get_size()))
 
             elif solve_cube.is_pressed(mx, my):
                 solve(cc.cubiecube)
-                # TODO implementation here
+            #     # TODO implementation here
 
             for obj in clickable:
                 if obj.is_pressed(mx, my):
