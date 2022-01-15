@@ -21,7 +21,7 @@ class tables:
              Lmove,
              Fmove,
              Bmove,
-             Dmove]  # Why have you changed this you idiot
+             Dmove]
 
     save_file_name = r"\Pruning tables.npz"
 
@@ -35,7 +35,6 @@ class tables:
         self.P4edge_table = []
         self.P8edge_table = []
 
-        # Pruning tables
 
         self.UDslice_Oedge_pruning_table = []
         self.UDslice_Ocorner_pruning_table = []

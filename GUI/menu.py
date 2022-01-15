@@ -240,27 +240,15 @@ class Text:
 
         if tracking:
             self.tracking = True
-            self.variable = track_target
+            self.get_variable_state = track_target
         else:
             self.tracking = False
 
         if max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
-                          self.get_lines(self.text, max_width)]
+                          self.line_cropper(self.text, self.max_width)]
         else:
-            self.lines = [self.font.render(text, False, self.text_colour)]
-
-    def update_text(self, text=None):
-        if text is not None:
-            self.text = text
-        elif self.tracking:
-            self.text = self.variable()
-
-        if self.max_width:
-            self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
-                          self.get_lines(self.text, self.max_width)]
-        else:
-            self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
+            self.lines = self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
 
     def get_y(self):
         ys = max([line.get_height() for line in self.lines])
@@ -270,10 +258,7 @@ class Text:
         xs = max([line.get_width() for line in self.lines])
         return xs
 
-    def get_lines(self, t, max_width):
-        if not t:
-            return []
-
+    def line_cropper(self, t: str, max_width: int) -> list:
         font = pygame.font.Font(self.font_path, self.size)
         lines = []
 
@@ -290,8 +275,26 @@ class Text:
                     lines.append(t)
                     return lines
 
+        return lines
+
+    def set_text(self, text):
+        self.text = text
+        self.lines = self.line_cropper(self.text, self.max_width)
+
+    def _update_text(self):
+        self.text = self.get_variable_state()
+        self.lines = self.line_cropper(self.text, self.max_width)
+
     def draw(self):
-        self.update_text()  # can probably clean this up
+        if self.tracking:
+            self._update_text()
+
+            if self.max_width:
+                self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
+                              self.line_cropper(self.text, self.max_width)]
+            else:
+                self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
+
         for y, line in enumerate(self.lines):
             if self.background:
                 pygame.draw.rect(self.screen, self.background_colour,
@@ -523,9 +526,9 @@ def generate():
              track_target=cnt.get_size)  # not rendering this for some reason, no idea. It's probably default values in draw function again...
 
     barrow = ImageButton(screen, (50, 820), path + r"\arrows\barrow.png", scaling=15,
-                         functions=[cnt.decrement, n.update_text])
+                         functions=[cnt.decrement, n.set_text])
     rarrow = ImageButton(screen, (500, 820), path + r"\arrows\rarrow.png", scaling=15,
-                         rotation=180, functions=[cnt.increment, n.update_text])
+                         rotation=180, functions=[cnt.increment, n.set_text])
 
     n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
 
