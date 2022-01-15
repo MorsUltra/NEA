@@ -213,7 +213,8 @@ class Text:
     font_path = os.getcwd() + r"\lib\BACKTO1982.TTF"
 
     def __init__(self, screen, text, position, size=40, rounded=True, background_colour=(0, 0, 0),
-                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True, tracking=False, track_target=None):
+                 text_colour=(255, 255, 255), padding=10, max_width=None, background=True, tracking=False,
+                 track_target=None):
 
         self.font = pygame.font.Font(self.font_path, size)
 
@@ -241,7 +242,7 @@ class Text:
             self.tracking = True
             self.variable = track_target
         else:
-            self.tracking=False
+            self.tracking = False
 
         if max_width:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
@@ -250,7 +251,7 @@ class Text:
             self.lines = [self.font.render(text, False, self.text_colour)]
 
     def update_text(self, text=None):
-        if text:
+        if text is not None:
             self.text = text
         elif self.tracking:
             self.text = self.variable()
@@ -270,6 +271,9 @@ class Text:
         return xs
 
     def get_lines(self, t, max_width):
+        if not t:
+            return []
+
         font = pygame.font.Font(self.font_path, self.size)
         lines = []
 
@@ -420,9 +424,9 @@ class TextButton(Button):
 
 def solve(cc=None):
     C = Cube(static=(300, 160), scaling=7, show_all=True, cc=cc, solve=True) if cc else Cube(static=(300, 160),
-                                                                                                scaling=7,
-                                                                                                show_all=True,
-                                                                                                solve=True)
+                                                                                             scaling=7,
+                                                                                             show_all=True,
+                                                                                             solve=True)
 
     step1 = Cube(static=(900, 300), scaling=5)
     step2 = Cube(static=(1300, 360), scaling=4)
@@ -434,7 +438,8 @@ def solve(cc=None):
 
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
 
-    sol = Text(screen, "NOT SOLVED", (300, 800), background_colour=(0, 0, 0), tracking=True, track_target=C.get_solutions)
+    sol = Text(screen, "NOT SOLVED", (300, 800), background_colour=(0, 0, 0), tracking=True,
+               track_target=C.get_solutions)
 
     solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
                             functions=[C.solve])
@@ -514,7 +519,8 @@ def generate():
     path = os.getcwd() + "\lib"
     cnt = Counter(24, lower_limit=1)
 
-    n = Text(screen, str(cnt), (0, 876), background=False, size=80, tracking=True, track_target=cnt.get_size) # not rendering this for some reason, no idea. It's probably default values in draw function again...
+    n = Text(screen, str(cnt), (0, 876), background=False, size=80, tracking=True,
+             track_target=cnt.get_size)  # not rendering this for some reason, no idea. It's probably default values in draw function again...
 
     barrow = ImageButton(screen, (50, 820), path + r"\arrows\barrow.png", scaling=15,
                          functions=[cnt.decrement, n.update_text])
