@@ -62,7 +62,7 @@ class Cube:
 
     converter = dict(zip(sides, range(0, 6)))
 
-    moves = dict(zip(sides, m))
+    moves = dict(zip(sides, m))  # TODO not sure about this - why is it reassigned on line77
 
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
@@ -94,7 +94,7 @@ class Cube:
             self.solve_thread = threading.Thread(target=self.find_solutions)
 
     def find_solutions(self):
-        s = solver(self.cubiecube, multithreading=False)
+        s = solver(self.cubiecube, multithreading=True)
         print("solving")
         self.solution = s.find_solutions()
         print("found solution")
@@ -127,16 +127,21 @@ class Cube:
     def convert_string_int(self):
         self.string = [self.converter[l] for l in self.string]
 
-    def get_scramble(self):
+    def get_text_scramble(self):
+        if len(self.moves) == 0:  # TODO moves going to zero somehow
+            return "None"  # always returning None?
         raw = " ".join(["".join(map(str, tup)) for tup in zip([self.sides[move] for move in self.moves], self.power)])
         raw = raw.replace("3", "'")
         raw = raw.replace("1", "")
+        print("returning scramble", raw)
         return raw
 
     def move(self, moves, power):
-        self.moves += moves
+        print("appending moves")
+        self.moves += moves  # moves is defaulting to None for some reason
         self.power += power
         self.cubiecube.MOVE_arr(moves, power)
+
         self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
         self.convert_string_int()
 
@@ -248,7 +253,7 @@ class Text:
             self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
                           self.line_cropper(self.text, self.max_width)]
         else:
-            self.lines = self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
+            self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
 
     def get_y(self):
         ys = max([line.get_height() for line in self.lines])
@@ -282,8 +287,11 @@ class Text:
         self.lines = self.line_cropper(self.text, self.max_width)
 
     def _update_text(self):
+        # print("getting new state", self.text)
         self.text = self.get_variable_state()
-        self.lines = self.line_cropper(self.text, self.max_width)
+        # print("new state", self.text)
+        if self.max_width:
+            self.lines = self.line_cropper(self.text, self.max_width)
 
     def draw(self):
         if self.tracking:
@@ -517,18 +525,18 @@ def generate():
     s_txtcolour = (0, 255, 255)
 
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour,
-             max_width=900, tracking=True, track_target=cc.get_scramble)
+             max_width=900, tracking=True, track_target=cc.get_text_scramble)
 
     path = os.getcwd() + "\lib"
     cnt = Counter(24, lower_limit=1)
 
-    n = Text(screen, str(cnt), (0, 876), background=False, size=80, tracking=True,
-             track_target=cnt.get_size)  # not rendering this for some reason, no idea. It's probably default values in draw function again...
+    n = Text(screen, cnt.get_size(), (0, 876), background=False, size=80, tracking=True,
+             track_target=cnt.get_size)
 
     barrow = ImageButton(screen, (50, 820), path + r"\arrows\barrow.png", scaling=15,
-                         functions=[cnt.decrement, n.set_text])
+                         functions=[cnt.decrement])
     rarrow = ImageButton(screen, (500, 820), path + r"\arrows\rarrow.png", scaling=15,
-                         rotation=180, functions=[cnt.increment, n.set_text])
+                         rotation=180, functions=[cnt.increment])
 
     n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
 
@@ -551,12 +559,12 @@ def generate():
                 running = False
 
             elif scramble_cube.is_pressed(mx, my):
-                cc = Cube(static=POS, scaling=SCALING)
+                cc = Cube(static=POS, scaling=SCALING)  # Clean cube
                 scramble(cc, int(cnt.get_size()))
 
-            elif solve_cube.is_pressed(mx, my):
+            elif solve_cube.is_pressed(mx,
+                                       my):  # these should be in button implementations somehow - how do you pass arguements with buttons?
                 solve(cc.cubiecube)
-            #     # TODO implementation here
 
             for obj in clickable:
                 if obj.is_pressed(mx, my):
