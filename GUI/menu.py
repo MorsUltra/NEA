@@ -62,8 +62,6 @@ class Cube:
 
     converter = dict(zip(sides, range(0, 6)))
 
-    moves = dict(zip(sides, m))  # TODO not sure about this - why is it reassigned on line77
-
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
         self.cubiecube = cc if cc else cubiecube()
@@ -92,6 +90,11 @@ class Cube:
 
         if solve:
             self.solve_thread = threading.Thread(target=self.find_solutions)
+
+    def clean(self):
+        self.cubiecube = cubiecube()
+        self.moves = []
+        self.power = []
 
     def find_solutions(self):
         s = solver(self.cubiecube, multithreading=True)
@@ -128,17 +131,15 @@ class Cube:
         self.string = [self.converter[l] for l in self.string]
 
     def get_text_scramble(self):
-        if len(self.moves) == 0:  # TODO moves going to zero somehow, maybe a clean cube confusing things?
-            return "None"  # always returning None?
+        if len(self.moves) == 0:
+            return "None"
         raw = " ".join(["".join(map(str, tup)) for tup in zip([self.sides[move] for move in self.moves], self.power)])
         raw = raw.replace("3", "'")
         raw = raw.replace("1", "")
-        print("returning scramble", raw)
         return raw
 
     def move(self, moves, power):
-        print("appending moves")
-        self.moves += moves  # moves is defaulting to None for some reason
+        self.moves += moves
         self.power += power
         self.cubiecube.MOVE_arr(moves, power)
 
@@ -453,7 +454,7 @@ def solve(cc=None):
                track_target=C.get_solutions)
 
     solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
-                            functions=[C.solve]) # TODO and why this works and not the other cube?
+                            functions=[C.solve])
     click = False
 
     drawable = [escape, C, solve_cube, input_cube, step1, step2, step3, sol]
@@ -495,7 +496,7 @@ def solve(cc=None):
         pygame.display.update()
 
 
-def scramble(cc, length):
+def scramble(cc, length):  # TODO not allowing sequential moves that are the same - B2 --> B2
     moves = [random.randint(0, 5) for x in range(length)]
     power = [random.randint(1, 3) for x in range(length)]
     cc.move(moves, power)
@@ -517,33 +518,36 @@ def generate():
                             shadow_colour=(0, 0, 255))
 
     title = Text(screen, "Scramble:", (50, 50), size=50,
-                 text_colour=(0, 255, 255))  # TODO something not working here - title not rendering
+                 text_colour=(0, 255, 255))
 
     s_pos = (50, title.position[1] + title.get_y() + title.padding * 2 + 20)
     s_size = 40
     s_bgcolour = (40, 43, 48)
     s_txtcolour = (0, 255, 255)
 
+    cnt = Counter(24, lower_limit=1)
+
     s = Text(screen, "None", s_pos, size=s_size, background_colour=s_bgcolour, text_colour=s_txtcolour,
-             max_width=900, tracking=True, track_target=cc.get_text_scramble) # TODO, issue is here, no sure why but cube is being copied as opposed to being refernced.
+             max_width=900, tracking=True,
+             track_target=cc.get_text_scramble)
 
     path = os.getcwd() + r"\lib"
 
-    cnt = Counter(24, lower_limit=1)
-
     n = Text(screen, cnt.get_size(), (0, 876), background=False, size=80, tracking=True,
-             track_target=[cnt.get_size])
+             track_target=cnt.get_size)
 
     barrow = ImageButton(screen, (50, 820), path + r"\arrows\barrow.png", scaling=15,
                          functions=[cnt.decrement])
     rarrow = ImageButton(screen, (500, 820), path + r"\arrows\rarrow.png", scaling=15,
-                         rotation=180, functions=cnt.increment) # TODO look at why this works but the cube tracking doesn't
+                         rotation=180,
+                         functions=[cnt.increment])
 
     n.position = (((barrow.position[0] + barrow.image.get_width()) + (rarrow.position[0])) / 2 - (n.get_x() / 2), 876)
 
     clickable = [barrow, rarrow]
 
-    objects = [scramble_cube, solve_cube, title, escape, barrow, rarrow, s, n] # TODO. Why is cube not drawable here? Similar issue here where cube is being copied into the list as opposed to being referenced. Do not understand why.
+    objects = [scramble_cube, solve_cube, title, escape, barrow, rarrow, s,
+               n]
 
     click = False
 
@@ -560,7 +564,7 @@ def generate():
                 running = False
 
             elif scramble_cube.is_pressed(mx, my):
-                cc = Cube(static=POS, scaling=SCALING)  # Clean cube
+                cc.clean()  # this is replacign cube, no more reference to old cube
                 scramble(cc, int(cnt.get_size()))
 
             elif solve_cube.is_pressed(mx,
@@ -574,7 +578,6 @@ def generate():
         cc.draw()
         for obj in objects:  # draw out the objects
             obj.draw()
-
 
         click = False
         for event in pygame.event.get():
