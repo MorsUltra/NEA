@@ -75,7 +75,7 @@ class Cube:
         self.moves = []
         self.power = []
         self._mode = show_all
-        self.solution = "Non e"
+        self.solution = "None"
 
         if static:
             self.rect = pygame.Rect(*static, self.x, self.y)
@@ -107,7 +107,7 @@ class Cube:
         self.solve_thread.start()
 
     def get_solutions(self):
-        if self.solution != "Non e":
+        if self.solution != "None":
             return self.format_movespower(*self.solution)
         else:
             return self.solution
@@ -271,13 +271,16 @@ class Text:
             self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
 
         if word_limit:
-            self.text = self.text[:self.word_cropper(self.text, self.word_limit)]
-            print(self.text)
+            self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
 
-    def word_cropper(self, string, seperator=" "):
+    def word_cropper(self, string, seperator=" ", word_count=1):
+        count = 0
         for i, char in enumerate(string):
-            if char == seperator:  # TODO some bug here - not evaluation as the same as space?)
-                return i
+            if char == seperator:
+                count += 1
+                if count == word_count:
+                    return i
+        return
 
     def get_y(self):
         ys = max([line.get_height() for line in self.lines])
@@ -317,7 +320,7 @@ class Text:
         # print("getting new state", self.text)
         self.text = self.get_variable_state()
         if self.word_limit:
-            self.text = self.text[:self.word_cropper(self.text, self.word_limit)]
+            self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
         # print("new state", self.text)
         if self.max_width:
             self.lines = self.line_cropper(self.text, self.max_width)
@@ -477,9 +480,9 @@ def solve(cc=None):
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
-    currentstep = Text(screen, "N/ a", (450, 800), background_colour=(0, 0, 0), text_colour=(220, 220, 220),
+    currentstep = Text(screen, "None", (442, 960), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
                        tracking=True,
-                       track_target=C.get_solutions, size=55, word_limit=1)
+                       track_target=C.get_solutions, size=70, word_limit=1)
 
     sol = Text(screen, "None", (600, 980), background_colour=(0, 0, 0), tracking=True,
                track_target=C.get_solutions, size=47)
