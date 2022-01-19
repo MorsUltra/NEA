@@ -22,6 +22,9 @@ class solver:
         self.phase2_worker_threads = [threading.Thread(target=self.phase2_worker) for _ in range(workers)]
 
     def find_solutions(self):
+        if self.cc_data == ([0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+            return [[], []]
         if self.multithreading:
             self.multi_thread_search()
 
@@ -42,7 +45,7 @@ class solver:
             moves = phase1_solution[0] + phase2_solution[0]
             powers = phase1_solution[1] + phase2_solution[1]
 
-            self.final_solutions = [moves, powers]
+            return [moves, powers]
 
     def multi_thread_search(self):
         self.phase1_thread.start()
