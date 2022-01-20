@@ -22,17 +22,53 @@ screen.fill((40, 43, 48))
 clock = pygame.time.Clock()
 
 
-class solution:
-    def __init__(self, cube, solution, p=0):
+class Solution:
+    def __init__(self, cube=None, solution=None, p=0, cubes=3):
         self.cubiecube = cube
-        self.solution = solution
-        self.steps = self.solution.split(" ")
+        self.moves, self.powers = solution() if solution else None  # need to find a way to update the solution all the time
         self.p = p
-        self.q = len(self.solution)
+        self.q = len(self.solution) - 1
+        self.Csteps = [Cube(cc=cube, static=(900, 300), scaling=5), Cube(cc=cube, static=(1300, 360), scaling=4),
+                       Cube(cc=cube, static=(1625, 420), scaling=3)]
+
+    def update_solution(self):
+        # Using the function provided update the solution from a solver and update the cubes of the solution
+        # respectively
+        pass
+
+    def set_steps(self):
+        if not self.moves or not self.powers:
+            return -1
+        else:
+            for i, c in enumerate(self.Csteps):
+                c.clean()
+                moves = self.moves[self.p:self.p + i]
+                powers = self.moves[self.p:self.p + i]
+                c.move(moves, powers)
 
     def __getitem__(self, item):
         # might need some "isinstance(item, slice): shit here"
-        return self.steps[item]
+        return self.moves[item], self.powers[item]
+
+    def __next__(self):
+        self.p += 1
+        for i, c in enumerate(self.Csteps):
+            if self.p + i > self.q:
+                break
+            else:
+                c.move(self.moves[self.p + i], self.powers[self.p + i])
+
+    # def pull(self):
+    #     if self.p == self.q:
+    #         return None
+
+    def reset(self, args):
+        self.__init__(self, *args)
+
+    def draw(self):
+        self.update_solution()
+        for c in self.Csteps:
+            c.draw()
 
 
 class Counter:
@@ -497,10 +533,6 @@ def solve(cc=None):
                                                                                              show_all=True,
                                                                                              solve=True)
 
-    step1 = Cube(static=(900, 300), scaling=5)
-    step2 = Cube(static=(1300, 360), scaling=4)
-    step3 = Cube(static=(1625, 420), scaling=3)
-
     running = True
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
@@ -517,10 +549,11 @@ def solve(cc=None):
                             functions=[C.solve])
     click = False
 
-    drawable = [escape, C, solve_cube, input_cube, step1, step2, step3, sol, currentstep]
+    drawable = [escape, C, solve_cube, input_cube, sol, currentstep]
 
     objects = [solve_cube]
 
+    S = Solution()
     while running:
         clock.tick(400)
 
