@@ -22,6 +22,19 @@ screen.fill((40, 43, 48))
 clock = pygame.time.Clock()
 
 
+class solution:
+    def __init__(self, cube, solution, p=0):
+        self.cubiecube = cube
+        self.solution = solution
+        self.steps = self.solution.split(" ")
+        self.p = p
+        self.q = len(self.solution)
+
+    def __getitem__(self, item):
+        # might need some "isinstance(item, slice): shit here"
+        return self.steps[item]
+
+
 class Counter:
     def __init__(self, starting, upper_limit=float("inf"), lower_limit=0):
         self._counter = starting
@@ -75,7 +88,7 @@ class Cube:
         self.moves = []
         self.power = []
         self._mode = show_all
-        self.solution = "None"
+        self.solution = None
 
         if static:
             self.rect = pygame.Rect(*static, self.x, self.y)
@@ -107,7 +120,7 @@ class Cube:
         self.solve_thread.start()
 
     def get_solutions(self):
-        if self.solution != "None":
+        if self.solution is not None:
             return self.format_movespower(*self.solution)
         else:
             return self.solution
@@ -264,14 +277,15 @@ class Text:
         else:
             self.tracking = False
 
-        if max_width:
-            self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
-                          self.line_cropper(self.text, self.max_width)]
-        else:
-            self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
+        if self.text is not None:
+            if max_width:
+                self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
+                              self.line_cropper(self.text, self.max_width)]
+            else:
+                self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
 
-        if word_limit:
-            self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
+            if word_limit:
+                self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
 
     def word_cropper(self, string, seperator=" ", word_count=1):
         count = 0
@@ -318,33 +332,45 @@ class Text:
 
     def _update_text(self):
         # print("getting new state", self.text)
-        self.text = self.get_variable_state()
-        if self.word_limit:
-            self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
-        # print("new state", self.text)
-        if self.max_width:
-            self.lines = self.line_cropper(self.text, self.max_width)
+        update = self.get_variable_state()
+        if update is None:
+            return -1
+        else:
+            self.text = self.get_variable_state()
+            if self.word_limit:
+                self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
+            # print("new state", self.text)
+            if self.max_width:
+                self.lines = self.line_cropper(self.text, self.max_width)
+            return 1
 
     def draw(self):
         if self.tracking:
-            self._update_text()
+            match self._update_text():
+                case 1:  # If text has been updated
+                    if self.max_width:
+                        self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
+                                      self.line_cropper(self.text, self.max_width)]
+                    else:
+                        self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
+                case -1:  # If text has not been updated
+                    pass
 
-            if self.max_width:
-                self.lines = [self.font.render(line.strip(), False, self.text_colour) for line in
-                              self.line_cropper(self.text, self.max_width)]
-            else:
-                self.lines = [self.font.render(self.text, False, self.text_colour)] if self.text else []
+        if self.text is None:
+            return
+        else:
+            for y, line in enumerate(self.lines):
+                if self.background:
+                    pygame.draw.rect(self.screen, self.background_colour,
+                                     pygame.Rect(self.position[0],
+                                                 self.position[1] + self.size * y + 2 * self.padding * y,
+                                                 line.get_width() + self.padding * 2,
+                                                 line.get_height() + self.padding * 2),
+                                     border_radius=int(min(line.get_size()) / 4))
 
-        for y, line in enumerate(self.lines):
-            if self.background:
-                pygame.draw.rect(self.screen, self.background_colour,
-                                 pygame.Rect(self.position[0], self.position[1] + self.size * y + 2 * self.padding * y,
-                                             line.get_width() + self.padding * 2, line.get_height() + self.padding * 2),
-                                 border_radius=int(min(line.get_size()) / 4))
-
-            self.screen.blit(line,
-                             (self.position[0] + self.padding,
-                              self.position[1] + self.size * y + self.padding * (2 * y + 1)))
+                self.screen.blit(line,
+                                 (self.position[0] + self.padding,
+                                  self.position[1] + self.size * y + self.padding * (2 * y + 1)))
 
 
 class Button:
@@ -480,11 +506,11 @@ def solve(cc=None):
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
-    currentstep = Text(screen, "None", (442, 960), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
+    currentstep = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
                        tracking=True,
                        track_target=C.get_solutions, size=70, word_limit=1)
 
-    sol = Text(screen, "None", (600, 980), background_colour=(0, 0, 0), tracking=True,
+    sol = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
                track_target=C.get_solutions, size=47)
 
     solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
