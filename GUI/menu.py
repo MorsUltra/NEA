@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import sys
@@ -23,18 +24,33 @@ clock = pygame.time.Clock()
 
 
 class Solution:
-    def __init__(self, cube=None, solution=None, p=0, cubes=3):
+    """
+    Just going to need to track a few variables:
+        need to be able to draw the cube
+        need to be able to display empty cubes
+        need to track current position and adjust it
+        need to be able to pull solution from other objects
+    """
+
+    def __init__(self, cube, tracking_target=None, p=0, cubes=3, static_solution=None):
         self.cubiecube = cube
-        self.moves, self.powers = solution() if solution else None  # need to find a way to update the solution all the time
+        self.moves, power = None, None
         self.p = p
-        self.q = len(self.solution) - 1
-        self.Csteps = [Cube(cc=cube, static=(900, 300), scaling=5), Cube(cc=cube, static=(1300, 360), scaling=4),
-                       Cube(cc=cube, static=(1625, 420), scaling=3)]
+        if not static_solution:
+            self.tracking_source = tracking_target
+            self.Csteps = [Cube(cc=cube, static=(900, 300), scaling=5), Cube(cc=cube, static=(1300, 360), scaling=4),
+                           Cube(cc=cube, static=(1625, 420), scaling=3)]
+            self.q = math.inf
+        else:
+            self.Csteps = [Cube(cc=cube, static=(900, 300), scaling=5), Cube(cc=cube, static=(1300, 360), scaling=4),
+                           Cube(cc=cube, static=(1625, 420), scaling=3)]  # TODO can make this more efficient
+            self.moves, self.powers = static_solution
+            self.q = len(self.moves) - 1
+
+        self.set_steps()
 
     def update_solution(self):
-        # Using the function provided update the solution from a solver and update the cubes of the solution
-        # respectively
-        pass
+        self.moves, self.powers = self.tracking_source()
 
     def set_steps(self):
         if not self.moves or not self.powers:
