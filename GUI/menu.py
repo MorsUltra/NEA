@@ -24,6 +24,9 @@ clock = pygame.time.Clock()
 
 
 class Solution:
+    move_antithesis = {1: 3,
+                       3: 1,
+                       2: 2}
     """
     Just going to need to track a few variables:
         need to be able to draw the cube
@@ -32,59 +35,57 @@ class Solution:
         need to be able to pull solution from other objects
     """
 
-    def __init__(self, cube, tracking_target=None, p=0, cubes=3, static_solution=None):
-        self.cubiecube = cube
-        self.moves, power = None, None
-        self.p = p
-        if not static_solution:
-            self.tracking_source = tracking_target
-            self.Csteps = [Cube(cc=cube, static=(900, 300), scaling=5), Cube(cc=cube, static=(1300, 360), scaling=4),
-                           Cube(cc=cube, static=(1625, 420), scaling=3)]
-            self.q = math.inf
+    def __init__(self, scramble_start, tracking_target):
+        self.p = 0
+        self.q = math.inf
+        self.cubiecube = scramble_start
+        self.moves, self.powers = None, None
+        self.tracking_source = tracking_target
+        self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
+                         Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
+                         Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
+        self.solution_found = False
+        self.update()
+
+    def update(self):
+        update = self.tracking_source()
+        if not update:
+            return
         else:
-            self.Csteps = [Cube(cc=cube, static=(900, 300), scaling=5), Cube(cc=cube, static=(1300, 360), scaling=4),
-                           Cube(cc=cube, static=(1625, 420), scaling=3)]  # TODO can make this more efficient
-            self.moves, self.powers = static_solution
-            self.q = len(self.moves) - 1
+            if self.solution_found:
+                return
+            else:
+                self.solution_found = True
+                self.moves, self.powers = update
+                self.q = len(self.moves)
+                self.set_cube_positions()
 
-        self.set_steps()
-
-    def update_solution(self):
-        self.moves, self.powers = self.tracking_source()
-
-    def set_steps(self):
-        if not self.moves or not self.powers:
-            return -1
-        else:
-            for i, c in enumerate(self.Csteps):
-                c.clean()
-                moves = self.moves[self.p:self.p + i]
-                powers = self.moves[self.p:self.p + i]
-                c.move(moves, powers)
+    def set_cube_positions(self):
+        for i, c in enumerate(self.cube_arr, 1):
+            if self.p + i > self.q:
+                continue
+            moves = self.moves[self.p:self.p + i]
+            powers = self.powers[self.p:self.p + i]
+            c.move(moves, powers) # TODO need to reset the cube here back to the scramble-start
 
     def __getitem__(self, item):
-        # might need some "isinstance(item, slice): shit here"
         return self.moves[item], self.powers[item]
 
-    def __next__(self):
+    def next(self):
         self.p += 1
-        for i, c in enumerate(self.Csteps):
-            if self.p + i > self.q:
-                break
-            else:
-                c.move(self.moves[self.p + i], self.powers[self.p + i])
+        self.set_cube_positions()
 
-    # def pull(self):
-    #     if self.p == self.q:
-    #         return None
+    def previous(self):
+        self.p -= 1
+        pass
 
     def reset(self, args):
         self.__init__(self, *args)
 
     def draw(self):
-        self.update_solution()
-        for c in self.Csteps:
-            c.draw()
+        self.update()
+        for cube in self.cube_arr:
+            cube.draw()
 
 
 class Counter:
@@ -129,7 +130,8 @@ class Cube:
 
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
-        self.cubiecube = cc if cc else cubiecube()
+
+        self.cubiecube = cubiecube(*cc.to_data_arr()) if cc else cubiecube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.convert_string_int()
         self.scaling = scaling
@@ -158,6 +160,8 @@ class Cube:
 
     def clean(self):
         self.cubiecube = cubiecube()
+        self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.convert_string_int()
         self.moves = []
         self.power = []
 
@@ -171,11 +175,18 @@ class Cube:
     def solve(self):
         self.solve_thread.start()
 
-    def get_solutions(self):
+    def get_raw_solutions(self):
         if self.solution is not None:
+            return self.solution
+        else:
+            return None
+
+    def get_formatted_solutions(self):
+        if self.solution is not None:
+            print(self.format_movespower(*self.solution))
             return self.format_movespower(*self.solution)
         else:
-            return self.solution
+            return None
 
     def change_scaling(self, scaling):
         self.scaling = scaling
@@ -556,20 +567,28 @@ def solve(cc=None):
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
     currentstep = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
                        tracking=True,
-                       track_target=C.get_solutions, size=70, word_limit=1)
+                       track_target=C.get_formatted_solutions, size=70, word_limit=1)
 
     sol = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
-               track_target=C.get_solutions, size=47)
+               track_target=C.get_formatted_solutions, size=47)
 
     solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
                             functions=[C.solve])
     click = False
 
-    drawable = [escape, C, solve_cube, input_cube, sol, currentstep]
+    S = Solution(C.cubiecube, C.get_raw_solutions)
 
-    objects = [solve_cube]
+    path = os.getcwd() + r"\lib"
 
-    S = Solution()
+    rarrow = ImageButton(screen, (500, 820), path + r"\arrows\rarrow.png", scaling=15,
+                         rotation=180,
+                         functions=[S.next])
+
+    drawable = [escape, C, solve_cube, input_cube, sol, currentstep, S, rarrow]
+
+    objects = [solve_cube, rarrow]
+
+
     while running:
         clock.tick(400)
 
