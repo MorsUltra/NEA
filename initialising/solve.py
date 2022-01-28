@@ -7,7 +7,7 @@ from initialising.table_init import tables
 
 class solver:
 
-    def __init__(self, cube, multithreading=True, workers=5):
+    def __init__(self, cube, multithreading=False, workers=5):
         self._running = True
         self.multithreading = multithreading
         self.phase1_searcher = phase1(cube)
@@ -30,13 +30,14 @@ class solver:
 
         else:
             self.phase1_searcher.find_solutions(single=True)
-
             phase1_solution = self.phase1_searcher.q.get()
 
-            cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
-                           moves=phase1_solution)  # TODO what is this you moron, the moves are going wrong
+            print(phase1_solution)  # Phase one is working fine
 
-            phase2_solver = self.phase2_searcher(cc)
+            cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
+                           moves=phase1_solution)
+
+            phase2_solver = self.phase2_searcher(cc)  # TODO make sure the cube is being translated correctly
             self.phase2_searchers.append(phase2_solver)
             phase2_solver.find_solutions(single=True)
 
@@ -45,6 +46,8 @@ class solver:
             moves = phase1_solution[0] + phase2_solution[0]
             powers = phase1_solution[1] + phase2_solution[1]
 
+            print(moves)
+            print(powers)
             return [moves, powers]
 
     def multi_thread_search(self):

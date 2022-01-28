@@ -183,7 +183,6 @@ class Cube:
 
     def get_formatted_solutions(self):
         if self.solution is not None:
-            print(self.format_movespower(*self.solution))
             return self.format_movespower(*self.solution)
         else:
             return None
