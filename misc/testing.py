@@ -26,44 +26,6 @@ MOVES = [Umove, Rmove, Lmove, Fmove, Bmove, Dmove]
 c = facelet_cube(defs["random"].replace(" ", ""))
 c = c.to_cubeie_cube(cubiecube())
 
-# U = 0
-# R = 1
-# L = 2
-# D = 3
-# F = 4
-# B = 5
-print()
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Umove)
-c.MOVE(Umove)  # U move is fine
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Fmove)
-c.MOVE(Fmove)  # looks like back and front are confused?
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Bmove)
-c.MOVE(Bmove)  # looks like B and down are confused - one step back?
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Rmove)
-c.MOVE(Rmove)
-c.MOVE(Rmove)  # R move is fine
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Fmove)  # U move is fine
-c.MOVE(Fmove)  # U move is fine
-c.MOVE(Fmove)  # U move is fine
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Umove)
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Dmove)
-c.MOVE(Dmove)
-c.MOVE(Dmove)  # looks like down and front are confused
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Bmove)
-c.MOVE(Bmove)
-c.MOVE(Bmove)
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Dmove)
-c.MOVE(Dmove)
-c.MOVE(Dmove)
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
-c.MOVE(Lmove)
-print(c.Ocorner_coords, c.Oedge_coords, c.POSud_slice_coords)
+from initialising.solve import solver
+s = solver(c)
+s.find_solutions()
