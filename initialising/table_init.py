@@ -23,6 +23,13 @@ class tables:
              Bmove,
              Dmove]
 
+    # moves = [Umove,
+    #          Rmove,
+    #          Fmove,
+    #          Dmove,
+    #          Lmove,
+    #          Bmove]
+
     save_file_name = r"\Pruning tables.npz"
 
     def __init__(self, load=True, save=True):
@@ -34,7 +41,6 @@ class tables:
         self.POSud_slice_table = []
         self.P4edge_table = []
         self.P8edge_table = []
-
 
         self.UDslice_Oedge_pruning_table = []
         self.UDslice_Ocorner_pruning_table = []
@@ -78,8 +84,8 @@ class tables:
 
         self.create_P4edge_table()  # This is working fine
         self.create_P8edge_table()  # This is working fine
-        self.create_P4edge_P8edge_Ptable()  # This MIGHT be working fine, however indexing seems to be different
-        self.create_P4edge_Pcorner_Ptable()  # This MIGHT be working fine, however indexing seems to be different
+        self.create_P4edge_P8edge_Ptable()
+        self.create_P4edge_Pcorner_Ptable()
 
     @staticmethod
     def save_file(path, data):
@@ -105,7 +111,7 @@ class tables:
     def create_UDslice_Ocorner_Ptable(self):
         table = [[-1] * self.NO_Ocorner_coords for _ in range(self.NO_POSud_slice_coords)]
         table[0][0] = 0
-        for depth in range(9):
+        for depth in range(10):
             for slice_row, combo_coords in enumerate(table):
                 for twist_column, place in enumerate(combo_coords):
                     if place == depth:
@@ -133,10 +139,10 @@ class tables:
 
         self.UDslice_Oedge_pruning_table = table
 
-    def create_P4edge_P8edge_Ptable(self):
+    def create_P4edge_P8edge_Ptable(self):  # Not working
         table = [[-1] * self.NO_P8edge_coords for _ in range(self.NO_P4edge_coords)]
         table[0][0] = 0
-        for depth in range(12):
+        for depth in range(13):
             for P4edge_row, combo_coords in enumerate(table):
                 for P8edge_column, place in enumerate(combo_coords):
                     if place == depth:
@@ -167,7 +173,6 @@ class tables:
 
         self.P4edge_Pcorner_Ptable = table
 
-
     def create_POSud_slice_table(self):
         cc = cubiecube()
         template = [[-1] * 18 for _ in range(self.NO_POSud_slice_coords)]
@@ -196,7 +201,7 @@ class tables:
 
     def create_Pcorner_table(self):
         cc = cubiecube()
-        template = [[-1] * 18 for _ in range(self.NO_Pcorner_coords)]
+        template = [[0] * 18 for _ in range(self.NO_Pcorner_coords)]
         # 1 is fine, 0 and 2 are not fine unless its a ud face
 
         for coord in range(self.NO_Pcorner_coords):
@@ -204,8 +209,8 @@ class tables:
                 cc.Pcorner_coords = coord
                 for power in range(3):
                     cc.Cmove(move)
-                    if power != 1 and i % 3 != 0:
-                        continue
+                    if power != 1 and i % 5 != 0:
+                        template[coord][(3 * i) + power] = -1
                     else:
                         template[coord][(3 * i) + power] = cc.Pcorner_coords
 
@@ -226,7 +231,7 @@ class tables:
 
     def create_P4edge_table(self):
         cc = cubiecube()
-        template = [[-1] * 18 for _ in range(self.NO_P4edge_coords)]
+        template = [[0] * 18 for _ in range(self.NO_P4edge_coords)]
         # allow single turns of the up and down face, and double turns of everything else
         # for up and down face, anything will go - so move % 3 = 0
         # for other faces, power must be 1 or not at all
@@ -235,15 +240,15 @@ class tables:
                 cc.P4edge_coords = coord
                 for power in range(3):
                     cc.Emove(move)
-                    if power != 1 and i % 3 != 0:
-                        continue
+                    if power != 1 and i % 5 != 0:
+                        template[coord][(3 * i) + power] = -1
                     else:
                         template[coord][(3 * i) + power] = cc.P4edge_coords
         self.P4edge_table = template
 
     def create_P8edge_table(self):
         cc = cubiecube()
-        template = [[-1] * 18 for _ in range(self.NO_P8edge_coords)]
+        template = [[0] * 18 for _ in range(self.NO_P8edge_coords)]
         # allow single turns of the up and down face, and double turns of everything else
         # for up and down face, anything will go - so move % 3 = 0
         # for other faces, power must be 1 or not at all
@@ -252,8 +257,8 @@ class tables:
                 cc.P8edge_coords = coord
                 for power in range(3):
                     cc.Emove(move)
-                    if power != 1 and i % 3 != 0:
-                        continue
+                    if power != 1 and i % 5 != 0:
+                        template[coord][(3 * i) + power] = -1
                     else:
                         template[coord][(3 * i) + power] = cc.P8edge_coords
         self.P8edge_table = template

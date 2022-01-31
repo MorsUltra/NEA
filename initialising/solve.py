@@ -32,13 +32,16 @@ class solver:
             self.phase1_searcher.find_solutions(single=True)
             phase1_solution = self.phase1_searcher.q.get()
 
-            print(phase1_solution)  # Phase one is working fine
+            return phase1_solution
 
+            print(phase1_solution)  # Phase one is working fine
             cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
                            moves=phase1_solution)
 
-            phase2_solver = self.phase2_searcher(cc)  # TODO make sure the cube is being translated correctly
-            self.phase2_searchers.append(phase2_solver)
+            print(
+                f"Corner Orientation: {cc.Oedge_coords}\nCorner Permutation: {cc.Pedge_coords}\nEdge Orientation: {cc.Oedge_coords}\nEdge Permutation: {cc.Pedge_coords}\nUD slice position coords: {cc.POSud_slice_coords}\nUD slice permutation coords: {cc.P4edge_coords}")
+            phase2_solver = self.phase2_searcher(cc)
+            # self.phase2_searchers.append(phase2_solver)
             phase2_solver.find_solutions(single=True)
 
             phase2_solution = phase2_solver.q.get()
@@ -152,7 +155,7 @@ class phase1(phase_searcher):
         self.coord3[0] = self.cube.POSud_slice_coords
         self.h_costs[0] = self.h(0)
 
-    def h(self, node_depth):
+    def h(self, node_depth):  # TODO this shit is sooooo fucked
         return max(
             self.t.UDslice_Oedge_pruning_table[self.coord3[node_depth]][self.coord2[node_depth]],
             self.t.UDslice_Ocorner_pruning_table[self.coord3[node_depth]][self.coord1[node_depth]]
