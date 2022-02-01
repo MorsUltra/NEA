@@ -19,7 +19,6 @@ from initialising.solve import phase2
 
 p2 = phase2(c)
 phase2_solution = p2.find_solutions(single=True)
-print(c.Ocorner_coords, c.Pcorner_coords, c.Oedge_coords, c.Pedge_coords, c.P4edge_coords)
-c.MOVE_arr(*phase2_solution)
+
+c.MOVE_arr(*p2.q.get())
 print(c.Ocorner_coords, c.Pcorner_coords, c.Oedge_coords, c.Pedge_coords, c.POSud_slice_coords)
-# TODO huge fucking bug here no idea what's going on, something in phase two is going wrong.

@@ -126,12 +126,17 @@ class phase_searcher:
         axis = [i for i in self.axis if i != -1]
         moves_power = [i for i in self.moves_power if i != -1]
 
+        print(self.coord1)
+        print(self.coord2)
+        print(self.coord3)
+
         return axis, moves_power
 
     def find_solutions(self, single=False):
         for lower_bound in range(self.max):
             n = self.ida(0, lower_bound)
             if n > 0:
+                print("found")
                 self.q.put(self.stats)
                 if single:
                     break
