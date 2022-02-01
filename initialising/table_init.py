@@ -84,8 +84,8 @@ class tables:
 
         self.create_P4edge_table()  # This is working fine
         self.create_P8edge_table()  # This is working fine
-        self.create_P4edge_P8edge_Ptable()
-        self.create_P4edge_Pcorner_Ptable()
+        self.create_P4edge_P8edge_Ptable()  # Probably working fine? Not confirmed
+        self.create_P4edge_Pcorner_Ptable()  # Probably working fine? Not confirmed
 
     @staticmethod
     def save_file(path, data):
