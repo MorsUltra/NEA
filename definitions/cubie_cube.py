@@ -5,21 +5,29 @@ from random import randint
 from definitions.cubedefs import *
 
 
-class cubiecube:
+class CubieCube:
     MOVES = []
 
     Ocorner_parity_value = [0, 2, 1]
 
-    def __init__(self, cp: list = None, co: list = None, ep: list = None, eo: list = None, moves=None):
-        self.cp = cp if cp else list(range(0, 8))
-        self.co = co if co else [0] * 8
-        self.ep = ep if ep else list(range(0, 12))  # TODO not sure if you need the list
-        self.eo = eo if eo else [0] * 12
+    def __init__(self, data=None, moves=None):
+        self.cp = data[0] if data else list(range(0, 8))
+        self.co = data[1] if data else [0] * 8
+        self.ep = data[2] if data else list(range(0, 12))  # TODO not sure if you need the list
+        self.eo = data[3] if data else [0] * 12
 
         if moves:
             self.MOVE_arr(*moves)
 
-    def to_data_arr(self) -> tuple[list | list, list | list[int], list | list, list | list[int]]:
+    def is_solved(self):
+        if self.to_data_arr() == (
+        [0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+            return True
+        else:
+            return False
+
+    def to_data_arr(self):
         return self.cp, self.co, self.ep, self.eo
 
     def to_facelet_cube(self, fc) -> str:
@@ -322,12 +330,12 @@ epB = [edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.BR, edge_
        edge_indices.DL, edge_indices.BL, edge_indices.FR, edge_indices.FL, edge_indices.UB, edge_indices.DB]
 eoB = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
 
-Umove = cubiecube(cp=cpU, co=coU, ep=epU, eo=eoU)
-Rmove = cubiecube(cp=cpR, co=coR, ep=epR, eo=eoR)
-Lmove = cubiecube(cp=cpL, co=coL, ep=epL, eo=eoL)
-Fmove = cubiecube(cp=cpF, co=coF, ep=epF, eo=eoF)
-Bmove = cubiecube(cp=cpB, co=coB, ep=epB, eo=eoB)
-Dmove = cubiecube(cp=cpD, co=coD, ep=epD, eo=eoD)
+Umove = CubieCube(data=[cpU, coU, epU, eoU])
+Rmove = CubieCube(data=[cpR, coR, epR, eoR])
+Lmove = CubieCube(data=[cpL, coL, epL, eoL])
+Fmove = CubieCube(data=[cpF, coF, epF, eoF])
+Bmove = CubieCube(data=[cpB, coB, epB, eoB])
+Dmove = CubieCube(data=[cpD, coD, epD, eoD])
 
 MOVES = [Umove,
          Rmove,
@@ -335,4 +343,4 @@ MOVES = [Umove,
          Fmove,
          Bmove,
          Dmove]
-cubiecube.moves = MOVES
+CubieCube.moves = MOVES

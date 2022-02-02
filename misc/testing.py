@@ -10,7 +10,7 @@ defs = {"solved": "UUU UUU UUU RRR RRR RRR LLL LLL LLL FFF FFF FFF BBB BBB BBB D
         "random": "BLU RUL LUF LFB DRD FUF RFB BLR BUR DLU BFF DDR LBU RBD DBR FLU RDF DUL"}
 
 c = facelet_cube(defs["random"].replace(" ", ""))
-c = c.to_cubeie_cube(cubiecube())
+c = c.to_cubeie_cube(CubieCube())
 
 # up back down right back up front down front right
 
@@ -24,8 +24,8 @@ moves = zip([0, 4, 5, 1, 4, 0, 3, 5, 3, 2],
             [2, 2, 2, 3, 3, 1, 3, 3, 3, 1])
 MOVES = [Umove, Rmove, Lmove, Fmove, Bmove, Dmove]
 c = facelet_cube(defs["random"].replace(" ", ""))
-c = c.to_cubeie_cube(cubiecube())
+c = c.to_cubeie_cube(CubieCube())
 
-from initialising.solve import solver
-s = solver(c)
+from initialising.solve import Solver
+s = Solver(c)
 s.find_solutions()

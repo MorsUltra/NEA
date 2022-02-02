@@ -174,7 +174,7 @@ class tables:
         self.P4edge_Pcorner_Ptable = table
 
     def create_POSud_slice_table(self):
-        cc = cubiecube()
+        cc = CubieCube()
         template = [[-1] * 18 for _ in range(self.NO_POSud_slice_coords)]
 
         for coord in range(self.NO_POSud_slice_coords):
@@ -187,7 +187,7 @@ class tables:
         self.POSud_slice_table = template
 
     def create_Oedge_table(self):
-        cc = cubiecube()
+        cc = CubieCube()
         template = [[-1] * 18 for _ in range(self.NO_Oedge_coords)]
 
         for coord in range(self.NO_Oedge_coords):
@@ -200,7 +200,7 @@ class tables:
         self.Oedge_table = template
 
     def create_Pcorner_table(self):
-        cc = cubiecube()
+        cc = CubieCube()
         template = [[0] * 18 for _ in range(self.NO_Pcorner_coords)]
         # 1 is fine, 0 and 2 are not fine unless its a ud face
 
@@ -217,7 +217,7 @@ class tables:
         self.Pcorner_table = template
 
     def create_Ocorner_table(self):
-        cc = cubiecube()
+        cc = CubieCube()
         template = [[-1] * 18 for _ in range(self.NO_Ocorner_coords)]
 
         for coord in range(self.NO_Ocorner_coords):  # for every possible orientation of the corners
@@ -230,7 +230,7 @@ class tables:
         self.Ocorner_table = template
 
     def create_P4edge_table(self):
-        cc = cubiecube()
+        cc = CubieCube()
         template = [[0] * 18 for _ in range(self.NO_P4edge_coords)]
         # allow single turns of the up and down face, and double turns of everything else
         # for up and down face, anything will go - so move % 3 = 0
@@ -247,7 +247,7 @@ class tables:
         self.P4edge_table = template
 
     def create_P8edge_table(self):
-        cc = cubiecube()
+        cc = CubieCube()
         template = [[0] * 18 for _ in range(self.NO_P8edge_coords)]
         # allow single turns of the up and down face, and double turns of everything else
         # for up and down face, anything will go - so move % 3 = 0

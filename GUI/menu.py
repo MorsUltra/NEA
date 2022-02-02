@@ -9,9 +9,9 @@ from pygame.locals import *
 
 from GUI.pygame_facelets import load_facelets as load
 from definitions.cubedefs import urf_facelet_indices
-from definitions.cubie_cube import cubiecube, MOVES as m
+from definitions.cubie_cube import CubieCube, MOVES as m
 from definitions.facelet_cube import facelet_cube
-from initialising.solve import solver
+from initialising.solve import Solver
 
 screen_width = 1920
 screen_height = 1080
@@ -131,7 +131,7 @@ class Cube:
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
 
-        self.cubiecube = cubiecube(*cc.to_data_arr()) if cc else cubiecube()
+        self.cubiecube = CubieCube(*cc.to_data_arr()) if cc else CubieCube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.convert_string_int()
         self.scaling = scaling
@@ -159,14 +159,14 @@ class Cube:
             self.solve_thread = threading.Thread(target=self.find_solutions)
 
     def clean(self):
-        self.cubiecube = cubiecube()
+        self.cubiecube = CubieCube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.convert_string_int()
         self.moves = []
         self.power = []
 
     def find_solutions(self):
-        s = solver(self.cubiecube,
+        s = Solver(self.cubiecube,
                    multithreading=False)  # TODO going to need a thread handler - can't restart threads so need to be handled to accept errors and termination such that they are constantly running unless completely finished with.
         print("solving")
         self.solution = s.find_solutions()
