@@ -41,9 +41,13 @@ class Solution:
         self.cubiecube = scramble_start
         self.moves, self.powers = None, None
         self.tracking_source = tracking_target
-        self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
-                         Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
-                         Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
+        # self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
+        #                  Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
+        #                  Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
+        self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5),
+                         Cube(cc=scramble_start, static=(1300, 360), scaling=4),
+                         Cube(cc=scramble_start, static=(1625, 420), scaling=3)]
+
         self.solution_found = False
         self.update()
 
@@ -60,24 +64,42 @@ class Solution:
                 self.q = len(self.moves)
                 self.set_cube_positions()
 
-    def set_cube_positions(self):
+    def set_cube_positions(self):  # just for setting
         for i, c in enumerate(self.cube_arr, 1):
             if self.p + i > self.q:
                 continue
             moves = self.moves[self.p:self.p + i]
             powers = self.powers[self.p:self.p + i]
-            c.move(moves, powers) # TODO need to reset the cube here back to the scramble-start
+            print(moves)
+            print(powers)
+            c.move(moves, powers)  # TODO need to reset the cube here back to the scramble-start or inverse the moves
 
     def __getitem__(self, item):
         return self.moves[item], self.powers[item]
 
     def next(self):
         self.p += 1
-        self.set_cube_positions()
+        for i, c in enumerate(self.cube_arr):
+            if self.p + i >= self.q:
+                continue
+            move = [self.moves[self.p + i]]
+            power = [self.powers[self.p + i]]
+            c.move(move, power)
 
     def previous(self):
-        self.p -= 1
-        pass
+        if self.p > 0:
+            self.p -= 1
+        else:
+            return
+
+        for i, c in enumerate(self.cube_arr[::-1]):
+            if self.p + (3 - i) >= self.q:
+                continue
+            move = [self.moves[self.p + (3 - i)]]
+            power = self.powers[self.p + (3 - i)]
+            power = [self.move_antithesis[power]]
+            c.move(move,
+                   power)  # TODO some formatting errors here can't get back to the very beginning, not requried but find out why
 
     def reset(self, args):
         self.__init__(self, *args)
@@ -131,7 +153,7 @@ class Cube:
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
 
-        self.cubiecube = CubieCube(*cc.to_data_arr()) if cc else CubieCube()
+        self.cubiecube = CubieCube(data=cc.to_data_arr()) if cc else CubieCube()
         self.string = self.cubiecube.to_facelet_cube(facelet_cube())
         self.convert_string_int()
         self.scaling = scaling
@@ -166,8 +188,8 @@ class Cube:
         self.power = []
 
     def find_solutions(self):
-        s = Solver(self.cubiecube,
-                   multithreading=False)  # TODO going to need a thread handler - can't restart threads so need to be handled to accept errors and termination such that they are constantly running unless completely finished with.
+        s = Solver(
+            self.cubiecube)  # TODO going to need a thread handler - can't restart threads so need to be handled to accept errors and termination such that they are constantly running unless completely finished with.
         print("solving")
         self.solution = s.find_solutions()
         print("found solution")
@@ -579,14 +601,15 @@ def solve(cc=None):
 
     path = os.getcwd() + r"\lib"
 
-    rarrow = ImageButton(screen, (500, 820), path + r"\arrows\rarrow.png", scaling=15,
+    rarrow = ImageButton(screen, (750, 730), path + r"\arrows\rarrow.png", scaling=15,
                          rotation=180,
                          functions=[S.next])
+    barrow = ImageButton(screen, (500, 730), path + r"\arrows\barrow.png", scaling=15,
+                         functions=[S.previous])
 
-    drawable = [escape, C, solve_cube, input_cube, sol, currentstep, S, rarrow]
+    drawable = [escape, C, solve_cube, input_cube, sol, currentstep, S, rarrow, barrow]
 
-    objects = [solve_cube, rarrow]
-
+    objects = [solve_cube, rarrow, barrow]
 
     while running:
         clock.tick(400)
