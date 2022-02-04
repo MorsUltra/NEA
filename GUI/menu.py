@@ -33,36 +33,52 @@ class Solution:
         need to be able to display empty cubes
         need to track current position and adjust it
         need to be able to pull solution from other objects
+        need to handle two solutions for scrolling and other functions
     """
 
-    def __init__(self, scramble_start, tracking_target):
+    def __init__(self, c, tracking_target):
         self.p = 0
         self.q = math.inf
-        self.cubiecube = scramble_start
+        self.cubiecube = c.cubiecube
         self.moves, self.powers = None, None
-        self.tracking_source = tracking_target
+        self.formatted_solution = None
+        self.raw_solution_tracking_target = c.get_raw_solutions
+        self.formatted_solution_tracking_target = c.get_formatted_solutions
         # self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
         #                  Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
         #                  Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
-        self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5),
-                         Cube(cc=scramble_start, static=(1300, 360), scaling=4),
-                         Cube(cc=scramble_start, static=(1625, 420), scaling=3)]
+        self.cube_arr = [Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
+                         Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
+                         Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
+
+        self.current_step = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
+                                 tracking=True, track_target=self.get_current_move, size=70,
+                                 word_limit=1)  # TODO need to have Solution objects track .get_formatted_solutions, and have Text track self-methods so that Solution can handle scrolling based on P
+
+        self.scrolling_solution = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
+                                       track_target=self.get_scrolling_moves, size=47)
 
         self.solution_found = False
         self.update()
 
+    def get_current_move(self):
+        pass
+
+    def get_scrolling_moves(self):
+        pass
+
     def update(self):
-        update = self.tracking_source()
+        if self.solution_found:
+            return
+        update = self.raw_solution_tracking_target()
         if not update:
             return
         else:
-            if self.solution_found:
-                return
-            else:
-                self.solution_found = True
-                self.moves, self.powers = update
-                self.q = len(self.moves)
-                self.set_cube_positions()
+            self.solution_found = True
+            self.formatted_solution = self.formatted_solution_tracking_target()
+            self.moves, self.powers = update
+            self.q = len(self.moves)
+            self.set_cube_positions()
 
     def set_cube_positions(self):  # just for setting
         for i, c in enumerate(self.cube_arr, 1):
@@ -70,8 +86,6 @@ class Solution:
                 continue
             moves = self.moves[self.p:self.p + i]
             powers = self.powers[self.p:self.p + i]
-            print(moves)
-            print(powers)
             c.move(moves, powers)  # TODO need to reset the cube here back to the scramble-start or inverse the moves
 
     def __getitem__(self, item):
@@ -586,18 +600,18 @@ def solve(cc=None):
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
     input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
-    currentstep = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
-                       tracking=True,
-                       track_target=C.get_formatted_solutions, size=70, word_limit=1)
-
-    sol = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
-               track_target=C.get_formatted_solutions, size=47)
+    # currentstep = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
+    #                    tracking=True,
+    #                    track_target=C.get_formatted_solutions, size=70, word_limit=1)
+    #
+    # sol = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
+    #            track_target=C.get_formatted_solutions, size=47)
 
     solve_cube = TextButton(screen, (50, 880), "Solve", size=50, text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
                             functions=[C.solve])
     click = False
 
-    S = Solution(C.cubiecube, C.get_raw_solutions)
+    S = Solution(C)
 
     path = os.getcwd() + r"\lib"
 
@@ -607,7 +621,7 @@ def solve(cc=None):
     barrow = ImageButton(screen, (500, 730), path + r"\arrows\barrow.png", scaling=15,
                          functions=[S.previous])
 
-    drawable = [escape, C, solve_cube, input_cube, sol, currentstep, S, rarrow, barrow]
+    drawable = [escape, C, solve_cube, input_cube, S, rarrow, barrow]
 
     objects = [solve_cube, rarrow, barrow]
 
