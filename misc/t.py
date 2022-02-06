@@ -1,6 +1,6 @@
-from initialising.table_init import tables
+from initialising.table_init import Tables
 
-t = tables()
+t = Tables()
 print(t.UDslice_Ocorner_pruning_table)
 
 # @classmethod

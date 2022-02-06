@@ -1,8 +1,7 @@
 import queue
-import threading
 
 from definitions.cubie_cube import CubieCube
-from initialising.table_init import tables
+from initialising.table_init import Tables
 
 
 class Solver:
@@ -86,7 +85,7 @@ class Solver:
 
 
 class PhaseN:
-    t = tables()
+    t = Tables()
 
     def __init__(self, cube, length=30):
         self.cube = cube

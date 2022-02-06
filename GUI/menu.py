@@ -8,9 +8,9 @@ import pygame
 from pygame.locals import *
 
 from GUI.pygame_facelets import load_facelets as load
-from definitions.cubedefs import urf_facelet_indices
-from definitions.cubie_cube import CubieCube, MOVES as m
-from definitions.facelet_cube import facelet_cube
+from definitions.cubedefs import URF_Facelet_Indices
+from definitions.cubie_cube import CubieCube
+from definitions.facelet_cube import Facelet_Cube
 from initialising.solve import Solver
 
 screen_width = 1920
@@ -36,7 +36,7 @@ class Solution:
         need to handle two solutions for scrolling and other functions
     """
 
-    def __init__(self, c, tracking_target):
+    def __init__(self, c):
         self.p = 0
         self.q = math.inf
         self.cubiecube = c.cubiecube
@@ -47,9 +47,12 @@ class Solution:
         # self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
         #                  Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
         #                  Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
-        self.cube_arr = [Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
-                         Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
-                         Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
+        self.cube_arr = [
+            Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
+            Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
+            Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
+
+        # TODO want another cube in there with "show_all" turned on Cube(static=(300, 160), scaling=7, show_all=True, cc=self.cubiecube, solve=True),
 
         self.current_step = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
                                  tracking=True, track_target=self.get_current_move, size=70,
@@ -62,10 +65,11 @@ class Solution:
         self.update()
 
     def get_current_move(self):
-        pass
+        return self.formatted_solution[self.p + 1] if self.formatted_solution and self.p < self.q - 1 else None
 
     def get_scrolling_moves(self):
-        pass
+        return " ".join(
+            self.formatted_solution[self.p + 2:]) if self.formatted_solution and self.p < self.q - 1 else None
 
     def update(self):
         if self.solution_found:
@@ -76,8 +80,10 @@ class Solution:
         else:
             self.solution_found = True
             self.formatted_solution = self.formatted_solution_tracking_target()
+            self.formatted_solution = self.formatted_solution.split()
             self.moves, self.powers = update
-            self.q = len(self.moves)
+            self.q = len(
+                self.moves)  # TODO this is fucked it should be -1 to represent the last viable index in the list, it would explain a lot of the limits
             self.set_cube_positions()
 
     def set_cube_positions(self):  # just for setting
@@ -92,7 +98,10 @@ class Solution:
         return self.moves[item], self.powers[item]
 
     def next(self):
-        self.p += 1
+        if self.p < self.q - 1:
+            self.p += 1
+        else:
+            return
         for i, c in enumerate(self.cube_arr):
             if self.p + i >= self.q:
                 continue
@@ -122,6 +131,9 @@ class Solution:
         self.update()
         for cube in self.cube_arr:
             cube.draw()
+
+        self.current_step.draw()
+        self.scrolling_solution.draw()
 
 
 class Counter:
@@ -168,7 +180,7 @@ class Cube:
                  show_all=False, solve=False):
 
         self.cubiecube = CubieCube(data=cc.to_data_arr()) if cc else CubieCube()
-        self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.string = self.cubiecube.to_facelet_cube(Facelet_Cube())
         self.convert_string_int()
         self.scaling = scaling
         self.x_constant = 1
@@ -183,6 +195,7 @@ class Cube:
         if static:
             self.rect = pygame.Rect(*static, self.x, self.y)
         else:
+            # self.rect = pygame.Rect(200, 200, self.x, self.y)
             self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1),
                                     random.randint(1, screen_height - self.y - 1),
                                     self.x, self.y)
@@ -196,7 +209,7 @@ class Cube:
 
     def clean(self):
         self.cubiecube = CubieCube()
-        self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.string = self.cubiecube.to_facelet_cube(Facelet_Cube())
         self.convert_string_int()
         self.moves = []
         self.power = []
@@ -235,7 +248,7 @@ class Cube:
         self._mode = False if self._mode else True
 
     def get_urf(self, string):
-        return self.set_colours("".join([string[c] for c in urf_facelet_indices]))
+        return self.set_colours("".join([string[c] for c in URF_Facelet_Indices]))
 
     def set_colours(self, raw):
         for i, face in enumerate(self.sides):
@@ -266,12 +279,12 @@ class Cube:
         self.power += power
         self.cubiecube.MOVE_arr(moves, power)
 
-        self.string = self.cubiecube.to_facelet_cube((facelet_cube()))
+        self.string = self.cubiecube.to_facelet_cube((Facelet_Cube()))
         self.convert_string_int()
 
     def shuffle(self):
         self.cubiecube.shuffle()
-        self.string = self.cubiecube.to_facelet_cube(facelet_cube())
+        self.string = self.cubiecube.to_facelet_cube(Facelet_Cube())
         self.convert_string_int()
 
     def dynamic_draw(self):
@@ -621,7 +634,7 @@ def solve(cc=None):
     barrow = ImageButton(screen, (500, 730), path + r"\arrows\barrow.png", scaling=15,
                          functions=[S.previous])
 
-    drawable = [escape, C, solve_cube, input_cube, S, rarrow, barrow]
+    drawable = [escape, solve_cube, input_cube, S, rarrow, barrow]
 
     objects = [solve_cube, rarrow, barrow]
 

@@ -1,13 +1,14 @@
 from definitions.cubedefs import *
 
-class facelet_cube:
+
+class Facelet_Cube:
 
     def __init__(self, string_definition=None):
         self.f = [0] * 54
 
         if string_definition:
             for i, c in enumerate(string_definition):
-                self.f[i] = axes[c]
+                self.f[i] = Axes[c]
 
             self.verify()
             pass
@@ -16,8 +17,8 @@ class facelet_cube:
             self.f = [-1] * 54
 
     def verify(self):
-        count = [0] * len(axes)
-        for i, c in enumerate(axes):
+        count = [0] * len(Axes)
+        for i, c in enumerate(Axes):
             count[i] = self.f.count(c)
 
         for c in count:
@@ -27,7 +28,7 @@ class facelet_cube:
     @property
     def corners(self):
         s = self.f
-        corners = [0] * len(corner_indices)
+        corners = [0] * len(Corner_Indices)
         for i in range(len(corners)):
             corners[i] = tuple(s[f] for f in corner_facelet_indices[i])
 
@@ -36,7 +37,7 @@ class facelet_cube:
     @property
     def edges(self):
         s = self.f
-        edges = [0] * len(edge_indices)
+        edges = [0] * len(Edge_Indices)
         for i in range(len(edges)):
             edges[i] = tuple(s[f] for f in edge_facelet_indices[i])
 
@@ -79,4 +80,3 @@ class facelet_cube:
         cc.eo = eo
 
         return cc
-

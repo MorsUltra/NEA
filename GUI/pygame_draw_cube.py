@@ -1,7 +1,9 @@
-import pygame, sys
+import pygame
+import sys
 from pygame.locals import *
+
+from definitions.cubedefs import URF_Facelet_Indices, raw_colours
 from .pygame_facelets import load
-from definitions.cubedefs import urf_facelet_indices, raw_colours
 
 print("HACKED!!!")
 
@@ -19,7 +21,7 @@ top, left, right = load(resources)
 
 def set_colours(raw: str, d=False):
     raw = raw.replace(" ", "")
-    raw = "".join([raw[c] for c in urf_facelet_indices])
+    raw = "".join([raw[c] for c in URF_Facelet_Indices])
 
     cols = raw_colours[:]
     sides = ["U", "F", "R", "L", "D", "B"]

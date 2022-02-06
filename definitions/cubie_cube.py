@@ -31,11 +31,11 @@ class CubieCube:
         return self.cp, self.co, self.ep, self.eo
 
     def to_facelet_cube(self, fc) -> str:
-        for corner in corner_indices:
+        for corner in Corner_Indices:
             for f in range(3):
                 fc.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]
 
-        for edge in edge_indices:
+        for edge in Edge_Indices:
             for e in range(2):
                 fc.f[edge_facelet_indices[edge][(self.eo[edge] + e) % 2]] = edge_axes[self.ep[edge]][e]
 
@@ -288,46 +288,46 @@ class CubieCube:
                 others += 1
 
 
-cpU = [corner_indices.UBR, corner_indices.URF, corner_indices.UFL, corner_indices.ULB, corner_indices.DFR,
-       corner_indices.DLF, corner_indices.DBL, corner_indices.DRB]
+cpU = [Corner_Indices.UBR, Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.DFR,
+       Corner_Indices.DLF, Corner_Indices.DBL, Corner_Indices.DRB]
 coU = [0, 0, 0, 0, 0, 0, 0, 0]
-epU = [edge_indices.UB, edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.DR, edge_indices.DF,
-       edge_indices.DL, edge_indices.DB, edge_indices.FR, edge_indices.FL, edge_indices.BL, edge_indices.BR]
+epU = [Edge_Indices.UB, Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.DR, Edge_Indices.DF,
+       Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.BR]
 eoU = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-cpR = [corner_indices.DFR, corner_indices.UFL, corner_indices.ULB, corner_indices.URF, corner_indices.DRB,
-       corner_indices.DLF, corner_indices.DBL, corner_indices.UBR]
+cpR = [Corner_Indices.DFR, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.URF, Corner_Indices.DRB,
+       Corner_Indices.DLF, Corner_Indices.DBL, Corner_Indices.UBR]
 coR = [2, 0, 0, 1, 1, 0, 0, 2]
-epR = [edge_indices.FR, edge_indices.UF, edge_indices.UL, edge_indices.UB, edge_indices.BR, edge_indices.DF,
-       edge_indices.DL, edge_indices.DB, edge_indices.DR, edge_indices.FL, edge_indices.BL, edge_indices.UR]
+epR = [Edge_Indices.FR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.UB, Edge_Indices.BR, Edge_Indices.DF,
+       Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.DR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.UR]
 eoR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-cpF = [corner_indices.UFL, corner_indices.DLF, corner_indices.ULB, corner_indices.UBR, corner_indices.URF,
-       corner_indices.DFR, corner_indices.DBL, corner_indices.DRB]
+cpF = [Corner_Indices.UFL, Corner_Indices.DLF, Corner_Indices.ULB, Corner_Indices.UBR, Corner_Indices.URF,
+       Corner_Indices.DFR, Corner_Indices.DBL, Corner_Indices.DRB]
 coF = [1, 2, 0, 0, 2, 1, 0, 0]
-epF = [edge_indices.UR, edge_indices.FL, edge_indices.UL, edge_indices.UB, edge_indices.DR, edge_indices.FR,
-       edge_indices.DL, edge_indices.DB, edge_indices.UF, edge_indices.DF, edge_indices.BL, edge_indices.BR]
+epF = [Edge_Indices.UR, Edge_Indices.FL, Edge_Indices.UL, Edge_Indices.UB, Edge_Indices.DR, Edge_Indices.FR,
+       Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.UF, Edge_Indices.DF, Edge_Indices.BL, Edge_Indices.BR]
 eoF = [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0]
 
-cpD = [corner_indices.URF, corner_indices.UFL, corner_indices.ULB, corner_indices.UBR, corner_indices.DLF,
-       corner_indices.DBL, corner_indices.DRB, corner_indices.DFR]
+cpD = [Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.UBR, Corner_Indices.DLF,
+       Corner_Indices.DBL, Corner_Indices.DRB, Corner_Indices.DFR]
 coD = [0, 0, 0, 0, 0, 0, 0, 0]
-epD = [edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.UB, edge_indices.DF, edge_indices.DL,
-       edge_indices.DB, edge_indices.DR, edge_indices.FR, edge_indices.FL, edge_indices.BL, edge_indices.BR]
+epD = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.UB, Edge_Indices.DF, Edge_Indices.DL,
+       Edge_Indices.DB, Edge_Indices.DR, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.BR]
 eoD = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-cpL = [corner_indices.URF, corner_indices.ULB, corner_indices.DBL, corner_indices.UBR, corner_indices.DFR,
-       corner_indices.UFL, corner_indices.DLF, corner_indices.DRB]
+cpL = [Corner_Indices.URF, Corner_Indices.ULB, Corner_Indices.DBL, Corner_Indices.UBR, Corner_Indices.DFR,
+       Corner_Indices.UFL, Corner_Indices.DLF, Corner_Indices.DRB]
 coL = [0, 1, 2, 0, 0, 2, 1, 0]
-epL = [edge_indices.UR, edge_indices.UF, edge_indices.BL, edge_indices.UB, edge_indices.DR, edge_indices.DF,
-       edge_indices.FL, edge_indices.DB, edge_indices.FR, edge_indices.UL, edge_indices.DL, edge_indices.BR]
+epL = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.BL, Edge_Indices.UB, Edge_Indices.DR, Edge_Indices.DF,
+       Edge_Indices.FL, Edge_Indices.DB, Edge_Indices.FR, Edge_Indices.UL, Edge_Indices.DL, Edge_Indices.BR]
 eoL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-cpB = [corner_indices.URF, corner_indices.UFL, corner_indices.UBR, corner_indices.DRB, corner_indices.DFR,
-       corner_indices.DLF, corner_indices.ULB, corner_indices.DBL]
+cpB = [Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.UBR, Corner_Indices.DRB, Corner_Indices.DFR,
+       Corner_Indices.DLF, Corner_Indices.ULB, Corner_Indices.DBL]
 coB = [0, 0, 1, 2, 0, 0, 2, 1]
-epB = [edge_indices.UR, edge_indices.UF, edge_indices.UL, edge_indices.BR, edge_indices.DR, edge_indices.DF,
-       edge_indices.DL, edge_indices.BL, edge_indices.FR, edge_indices.FL, edge_indices.UB, edge_indices.DB]
+epB = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.BR, Edge_Indices.DR, Edge_Indices.DF,
+       Edge_Indices.DL, Edge_Indices.BL, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.UB, Edge_Indices.DB]
 eoB = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
 
 Umove = CubieCube(data=[cpU, coU, epU, eoU])
@@ -343,4 +343,5 @@ MOVES = [Umove,
          Fmove,
          Bmove,
          Dmove]
+
 CubieCube.moves = MOVES

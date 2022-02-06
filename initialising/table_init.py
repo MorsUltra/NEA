@@ -5,7 +5,7 @@ import numpy as np
 from definitions.cubie_cube import *
 
 
-class tables:
+class Tables:
     NO_Ocorner_coords = 2187
     NO_Pcorner_coords = 40320
 
