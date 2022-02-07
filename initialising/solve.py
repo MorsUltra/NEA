@@ -20,6 +20,7 @@ class Solver:
     def find_solutions(self):
         if self.cc.is_solved():
             return None
+
         else:
             phase1 = self.phase1_searcher(self.cc)
             phase1.start_search()
@@ -36,52 +37,6 @@ class Solver:
             powers = phase1_solution[1] + phase2_solution[1]
 
             return [moves, powers]
-
-    # def multi_thread_search(self):
-    #     self.phase1_thread.start()
-    #
-    #     for worker in self.phase2_worker_threads:
-    #         worker.start()
-    #
-    #     checker = threading.Thread(target=self.checker)
-    #     checker.start()
-
-    # def phase2_worker(self):
-    #     while self._running:
-    #         if not self.phase1_searcher.q.empty():
-    #             phase1_solution = self.phase1_searcher.q.get()
-    #
-    #             cc = cubiecube(cp=self.cc_data[0], co=self.cc_data[1], ep=self.cc_data[2], eo=self.cc_data[3],
-    #                            moves=phase1_solution)
-    #
-    #             phase2_searcher = self.phase2_searcher(cc)
-    #             self.phase2_searchers.append(phase2_searcher)
-    #
-    #             phase2_searcher.start_search(single=True)
-    #
-    #             # When terminated during search won't produce solution so will hang at this .get() if not compensated for
-    #             if not phase2_searcher.q.empty():
-    #                 phase2_solution = phase2_searcher.q.get()
-    #
-    #                 moves = phase1_solution[0] + phase2_solution[0]
-    #                 powers = phase1_solution[1] + phase2_solution[1]
-    #
-    #                 self.final_solutions.append([moves, powers])
-    #
-    #             self.phase1_searcher.q.task_done()
-    #
-    # def checker(self):
-    #     while self._running:
-    #         if not self.phase1_thread.is_alive() and not self.phase1_searcher.q.unfinished_tasks:
-    #             self.terminate()
-    #
-    # def terminate(self):
-    #     self._running = False
-    #
-    #     self.phase1_searcher.terminate()
-    #
-    #     for searcher in self.phase2_searchers:
-    #         searcher.terminate()
 
 
 class PhaseN:

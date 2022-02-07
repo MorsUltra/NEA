@@ -39,20 +39,19 @@ class Solution:
     def __init__(self, c):
         self.p = 0
         self.q = math.inf
+
         self.cubiecube = c.cubiecube
+
         self.moves, self.powers = None, None
         self.formatted_solution = None
+
         self.raw_solution_tracking_target = c.get_raw_solutions
         self.formatted_solution_tracking_target = c.get_formatted_solutions
-        # self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
-        #                  Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
-        #                  Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
+
         self.cube_arr = [Cube(static=(300, 160), scaling=7, show_all=True, cc=self.cubiecube, solve=True),
                          Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
                          Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
                          Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
-
-        # TODO want another cube in there with "show_all" turned on Cube(static=(300, 160), scaling=7, show_all=True, cc=self.cubiecube, solve=True),
 
         self.current_step = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
                                  tracking=True, track_target=self.get_current_move, size=70,
@@ -61,7 +60,7 @@ class Solution:
         self.scrolling_solution = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
                                        track_target=self.get_scrolling_moves, size=47)
 
-        self.solution_found = False
+        self.__empty = True
         self.update()
 
     def get_current_move(self):
@@ -72,7 +71,7 @@ class Solution:
 
     def get_scrolling_moves(self):
         if self.formatted_solution and self.p < self.q:
-            return " ".join(self.formatted_solution[self.p+1:])
+            return " ".join(self.formatted_solution[self.p + 1:])
         else:
             if self.formatted_solution:
                 return "..."
@@ -80,18 +79,19 @@ class Solution:
                 return None
 
     def update(self):
-        if self.solution_found:
+        if not self.__empty:
             return
+
         update = self.raw_solution_tracking_target()
-        if not update:
-            return
-        else:
-            self.solution_found = True
+        if update:
+            self.__empty = False
             self.formatted_solution = self.formatted_solution_tracking_target()
             self.formatted_solution = self.formatted_solution.split()
             self.moves, self.powers = update
             self.q = len(self.moves) - 1
             self.set_cube_positions()
+        else:
+            return
 
     def set_cube_positions(self):  # just for setting
         for i, c in enumerate(self.cube_arr):
@@ -102,10 +102,10 @@ class Solution:
 
             c.move(moves, powers)
 
-    def __getitem__(self, item):
-        return self.moves[item], self.powers[item]
-
     def next(self):
+        if self.__empty:
+            return
+
         if self.p <= self.q:
             for i, c in enumerate(self.cube_arr):
                 if self.p + i > self.q:
@@ -119,18 +119,22 @@ class Solution:
             return
 
     def previous(self):
+        if self.__empty:
+            return
+
         if self.p == 0:
             return
+
         self.p -= 1
         t = len(self.cube_arr)
+
         for i, c in enumerate(self.cube_arr):
             if self.p + i > self.q:
                 continue
             move = [self.moves[self.p + i]]
             power = self.powers[self.p + i]
             power = [self.move_antithesis[power]]
-            c.move(move,
-                   power)  # TODO some formatting errors here can't get back to the very beginning, not requried but find out why
+            c.move(move, power)
 
     def reset(self, args):
         self.__init__(self, *args)
@@ -199,6 +203,7 @@ class Cube:
         self.power = []
         self._mode = show_all
         self.solution = None
+        self.__thread_started = False
 
         if static:
             self.rect = pygame.Rect(*static, self.x, self.y)
@@ -213,7 +218,7 @@ class Cube:
         self.facelets = load(resources)
 
         if solve:
-            self.solve_thread = threading.Thread(target=self.find_solutions)
+            self.solve_thread = threading.Thread(target=self.find_solutions, daemon=True)
 
     def clean(self):
         self.cubiecube = CubieCube()
@@ -223,14 +228,17 @@ class Cube:
         self.power = []
 
     def find_solutions(self):
-        s = Solver(
-            self.cubiecube)  # TODO going to need a thread handler - can't restart threads so need to be handled to accept errors and termination such that they are constantly running unless completely finished with.
+        s = Solver(self.cubiecube)  # TODO going to need a thread handler - can't restart threads so need to be handled to accept errors and termination such that they are constantly running unless completely finished with.
         print("solving")
         self.solution = s.find_solutions()
         print("found solution")
 
     def solve(self):
-        self.solve_thread.start()
+        if not self.__thread_started:
+            self.__thread_started = True
+            self.solve_thread.start()
+        else:
+            return
 
     def get_raw_solutions(self):
         if self.solution is not None:
@@ -610,6 +618,52 @@ class TextButton(Button):
             return False
 
 
+def input_cube():
+    running = True
+
+    escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
+
+    click = False
+
+    drawable = [escape]
+
+    objects = []
+
+    while running:
+        clock.tick(400)
+
+        screen.fill((40, 43, 48))
+
+        mx, my = pygame.mouse.get_pos()
+
+        if click:
+            if escape.is_pressed(mx, my):
+                running = False
+
+            for obj in objects:
+                if obj.is_pressed(mx, my):
+                    obj.run()
+
+        for obj in drawable:
+            obj.draw()
+
+        click = False
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+
+
 def solve(cc=None):
     C = Cube(static=(300, 160), scaling=7, show_all=True, cc=cc, solve=True) if cc else Cube(static=(300, 160),
                                                                                              scaling=7,
@@ -673,6 +727,10 @@ def solve(cc=None):
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     running = False
+                elif event.key == K_LEFT:
+                    barrow.run()
+                elif event.key == K_RIGHT:
+                    rarrow.run()
 
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
