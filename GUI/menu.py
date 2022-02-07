@@ -47,16 +47,16 @@ class Solution:
         # self.cube_arr = [Cube(cc=scramble_start, static=(900, 300), scaling=5, show_all=True),
         #                  Cube(cc=scramble_start, static=(1300, 360), scaling=4,show_all=True),
         #                  Cube(cc=scramble_start, static=(1625, 420), scaling=3, show_all=True)]
-        self.cube_arr = [
-            Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
-            Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
-            Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
+        self.cube_arr = [Cube(static=(300, 160), scaling=7, show_all=True, cc=self.cubiecube, solve=True),
+                         Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
+                         Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
+                         Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
 
         # TODO want another cube in there with "show_all" turned on Cube(static=(300, 160), scaling=7, show_all=True, cc=self.cubiecube, solve=True),
 
         self.current_step = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
                                  tracking=True, track_target=self.get_current_move, size=70,
-                                 word_limit=1)  # TODO need to have Solution objects track .get_formatted_solutions, and have Text track self-methods so that Solution can handle scrolling based on P
+                                 word_limit=1)
 
         self.scrolling_solution = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
                                        track_target=self.get_scrolling_moves, size=47)
@@ -65,11 +65,19 @@ class Solution:
         self.update()
 
     def get_current_move(self):
-        return self.formatted_solution[self.p + 1] if self.formatted_solution and self.p < self.q - 1 else None
+        if self.formatted_solution and self.p <= self.q:
+            return self.formatted_solution[self.p]
+        else:
+            return None
 
     def get_scrolling_moves(self):
-        return " ".join(
-            self.formatted_solution[self.p + 2:]) if self.formatted_solution and self.p < self.q - 1 else None
+        if self.formatted_solution and self.p < self.q:
+            return " ".join(self.formatted_solution[self.p+1:])
+        else:
+            if self.formatted_solution:
+                return "..."
+            else:
+                return None
 
     def update(self):
         if self.solution_found:
@@ -82,44 +90,47 @@ class Solution:
             self.formatted_solution = self.formatted_solution_tracking_target()
             self.formatted_solution = self.formatted_solution.split()
             self.moves, self.powers = update
-            self.q = len(
-                self.moves)  # TODO this is fucked it should be -1 to represent the last viable index in the list, it would explain a lot of the limits
+            self.q = len(self.moves) - 1
             self.set_cube_positions()
 
     def set_cube_positions(self):  # just for setting
-        for i, c in enumerate(self.cube_arr, 1):
+        print(self.formatted_solution)
+        for i, c in enumerate(self.cube_arr):
             if self.p + i > self.q:
                 continue
             moves = self.moves[self.p:self.p + i]
             powers = self.powers[self.p:self.p + i]
-            c.move(moves, powers)  # TODO need to reset the cube here back to the scramble-start or inverse the moves
+
+            c.move(moves, powers)
 
     def __getitem__(self, item):
         return self.moves[item], self.powers[item]
 
     def next(self):
-        if self.p < self.q - 1:
-            self.p += 1
+        if self.p <= self.q:
+            for i, c in enumerate(self.cube_arr):
+                if self.p + i > self.q:
+                    continue
+                move = [self.moves[self.p + i]]
+                power = [self.powers[self.p + i]]
+                c.move(move, power)
+            if self.p <= self.q:
+                self.p += 1
         else:
             return
-        for i, c in enumerate(self.cube_arr):
-            if self.p + i >= self.q:
-                continue
-            move = [self.moves[self.p + i]]
-            power = [self.powers[self.p + i]]
-            c.move(move, power)
 
     def previous(self):
-        if self.p > 0:
-            self.p -= 1
-        else:
-            return
-
-        for i, c in enumerate(self.cube_arr[::-1]):
-            if self.p + (3 - i) >= self.q:
+        # if self.p > 0:
+        #     self.p -= 1
+        # else:
+        #     return
+        self.p -= 1#
+        t = len(self.cube_arr)
+        for i, c in enumerate(self.cube_arr):
+            if self.p + t - i > self.q:
                 continue
-            move = [self.moves[self.p + (3 - i)]]
-            power = self.powers[self.p + (3 - i)]
+            move = [self.moves[self.p + t - i]]
+            power = self.powers[self.p + t - i]
             power = [self.move_antithesis[power]]
             c.move(move,
                    power)  # TODO some formatting errors here can't get back to the very beginning, not requried but find out why
