@@ -94,7 +94,6 @@ class Solution:
             self.set_cube_positions()
 
     def set_cube_positions(self):  # just for setting
-        print(self.formatted_solution)
         for i, c in enumerate(self.cube_arr):
             if self.p + i > self.q:
                 continue
@@ -120,17 +119,15 @@ class Solution:
             return
 
     def previous(self):
-        # if self.p > 0:
-        #     self.p -= 1
-        # else:
-        #     return
-        self.p -= 1#
+        if self.p == 0:
+            return
+        self.p -= 1
         t = len(self.cube_arr)
         for i, c in enumerate(self.cube_arr):
-            if self.p + t - i > self.q:
+            if self.p + i > self.q:
                 continue
-            move = [self.moves[self.p + t - i]]
-            power = self.powers[self.p + t - i]
+            move = [self.moves[self.p + i]]
+            power = self.powers[self.p + i]
             power = [self.move_antithesis[power]]
             c.move(move,
                    power)  # TODO some formatting errors here can't get back to the very beginning, not requried but find out why
