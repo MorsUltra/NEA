@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import threading
+from itertools import count
 
 import pygame
 from pygame.locals import *
@@ -182,7 +183,7 @@ class Cube:
                "Red",
                "Orange",
                "Yellow",
-               "Blue"]
+               "Blue"]  # TODO just do some mapping here to map sides to a colour - honestly stupid
 
     sides = ["U", "R", "L", "F", "B", "D"]
 
@@ -228,7 +229,7 @@ class Cube:
         self.power = []
 
     def find_solutions(self):
-        s = Solver(self.cubiecube)  # TODO going to need a thread handler - can't restart threads so need to be handled to accept errors and termination such that they are constantly running unless completely finished with.
+        s = Solver(self.cubiecube)
         print("solving")
         self.solution = s.find_solutions()
         print("found solution")
@@ -618,14 +619,88 @@ class TextButton(Button):
             return False
 
 
-def input_cube():
+class ColourPicker:
+    colour_map = {0: (255, 255, 255),
+                  1: (255, 0, 0),
+                  2: (255, 69, 0),
+                  3: (0, 255, 0),
+                  4: (0, 0, 255),
+                  5: (255, 255, 0)}
+
+    def __init__(self, anchor, colour=None, value=None, colour_picker=None):
+        self.anchor_x, self.anchor_y = anchor
+
+        self.rect = pygame.Rect(self.anchor_x + self.size * self.x, self.anchor_y + self.size * self.y, self.size,
+                                self.size)
+
+        self.colour = colour
+        self.value = value
+
+        self.get_int = colour_picker
+
+
+class Square:
+    id_iter = count()
+    size = 100
+
+    colour_map = {0: (255, 255, 255),
+                  1: (255, 0, 0),
+                  2: (255, 69, 0),
+                  3: (0, 255, 0),
+                  4: (0, 0, 255),
+                  5: (255, 255, 0)}
+
+    def __init__(self, anchor, rows=1, columns=1, initial_value=None, colour=None):
+        self.id = next(self.id_iter)
+
+        self.x = self.id % columns
+        self.y = self.id // rows
+
+        self.anchor_x, self.anchor_y = anchor
+
+        self.rect = pygame.Rect(self.anchor_x + self.size * self.x, self.anchor_y + self.size * self.y, self.size,
+                                self.size)
+
+        self.i = initial_value
+        self.colour = colour
+
+
+class ColourSetter(Square):
+    id_iter = count()
+
+    def __init__(self, anchor, rows=1, columns):
+        super().__init__()
+        self.
+
+    def draw(self):
+        pygame.draw.rect(screen, self.colour_map[self.i], self.rect)
+        pygame.draw.rect(screen, (0, 0, 0), self.rect, width=1)
+
+    def is_pressed(self, mx, my):
+        if self.rect.collidepoint(mx, my):
+            return True
+        else:
+            return False
+
+    def run(self):
+        self.colour = self.colour_map[self.get_int()]
+
+
+def input_cube_screen():
+    U = [InputFacelet((500, 100), 0) for _ in range(9)]
+    # R = [InputFacelet(1) for _ in range(9)]
+    # L = [InputFacelet(2) for _ in range(9)]
+    # F = [InputFacelet(3) for _ in range(9)]
+    # B = [InputFacelet(4) for _ in range(9)]
+    # D = [InputFacelet(5) for _ in range(9)]
+
     running = True
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
     click = False
 
-    drawable = [escape]
+    drawable = [escape, *U]
 
     objects = []
 
@@ -674,7 +749,8 @@ def solve(cc=None):
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
-    input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
+    input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
+                            functions=[input_cube_screen])
     # currentstep = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
     #                    tracking=True,
     #                    track_target=C.get_formatted_solutions, size=70, word_limit=1)
@@ -698,7 +774,7 @@ def solve(cc=None):
 
     drawable = [escape, solve_cube, input_cube, S, rarrow, barrow]
 
-    objects = [solve_cube, rarrow, barrow]
+    objects = [solve_cube, rarrow, barrow, input_cube]
 
     while running:
         clock.tick(400)
