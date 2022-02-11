@@ -619,62 +619,34 @@ class TextButton(Button):
             return False
 
 
-class ColourPicker:
-    colour_map = {0: (255, 255, 255),
-                  1: (255, 0, 0),
-                  2: (255, 69, 0),
-                  3: (0, 255, 0),
-                  4: (0, 0, 255),
-                  5: (255, 255, 0)}
-
-    def __init__(self, anchor, colour=None, value=None, colour_picker=None):
-        self.anchor_x, self.anchor_y = anchor
-
-        self.rect = pygame.Rect(self.anchor_x + self.size * self.x, self.anchor_y + self.size * self.y, self.size,
-                                self.size)
-
-        self.colour = colour
-        self.value = value
-
-        self.get_int = colour_picker
-
-
 class Square:
-    id_iter = count()
     size = 100
 
     colour_map = {0: (255, 255, 255),
                   1: (255, 0, 0),
-                  2: (255, 69, 0),
+                  2: (255, 140, 0),
                   3: (0, 255, 0),
                   4: (0, 0, 255),
                   5: (255, 255, 0)}
 
-    def __init__(self, anchor, rows=1, columns=1, initial_value=None, colour=None):
-        self.id = next(self.id_iter)
-
-        self.x = self.id % columns
-        self.y = self.id // rows
+    def __init__(self, anchor, initial_value=None, outline=None):
 
         self.anchor_x, self.anchor_y = anchor
 
-        self.rect = pygame.Rect(self.anchor_x + self.size * self.x, self.anchor_y + self.size * self.y, self.size,
+        if outline:
+            self.outline = outline
+        else:
+            self.outline = None
+
+        self.rect = pygame.Rect(self.anchor_x, self.anchor_y, self.size,
                                 self.size)
 
-        self.i = initial_value
-        self.colour = colour
-
-
-class ColourSetter(Square):
-    id_iter = count()
-
-    def __init__(self, anchor, rows=1, columns):
-        super().__init__()
-        self.
-
-    def draw(self):
-        pygame.draw.rect(screen, self.colour_map[self.i], self.rect)
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, width=1)
+        if initial_value is not None:
+            self.i = initial_value
+            self.colour = self.colour_map[self.i]
+        else:
+            self.i = None
+            self.colour = None
 
     def is_pressed(self, mx, my):
         if self.rect.collidepoint(mx, my):
@@ -682,12 +654,102 @@ class ColourSetter(Square):
         else:
             return False
 
+    def draw(self):
+        if self.colour:
+            pygame.draw.rect(screen, self.colour, self.rect)
+        if self.outline:
+            pygame.draw.rect(screen, self.outline, self.rect, width=2)
+
+    def update_value(self, update):
+        if update is not None:
+            self.i = update
+            self.colour = self.colour_map[self.i]
+
     def run(self):
-        self.colour = self.colour_map[self.get_int()]
+        pass
+
+
+class ColourSetter(Square):
+
+    def __init__(self, anchor, initial_value, set_target, outline=(0, 0, 0)):
+        super().__init__(anchor, initial_value=initial_value, outline=outline)
+        self.set_target = set_target
+
+    def run(self):
+        self.set_target(self.i)
+
+
+class ColourShower(Square):
+
+    def __init__(self, anchor, set_target, initial_value=None, outline=(0, 0, 0)):
+        super().__init__(anchor, initial_value=initial_value, outline=outline)
+        self.get_i = set_target
+
+    def draw(self):
+        update = self.get_i()
+        self.update_value(update)
+        super().draw()
+
+
+class ColourGetter(Square):
+    id_iter = count()
+    size = 125
+
+    def __init__(self, anchor, track_target, initial_value=None, outline=(0, 0, 0), locked=False):
+        self.id = next(self.id_iter)
+        super().__init__(anchor, initial_value=initial_value, outline=outline)
+        self.track_target = track_target
+        self.locked = locked
+
+    def run(self):
+        if self.locked:
+            return
+
+        self.update_value(self.track_target())
+
+    def toggle_lock(self):
+        if self.locked:
+            self.locked = False
+        else:
+            self.locked = True
+
+
+class Tracker:
+
+    def __init__(self, j=None):
+        self.i = j
+
+    def set_i(self, j):
+        self.i = j
+
+    def get_i(self):
+        return self.i
 
 
 def input_cube_screen():
-    U = [InputFacelet((500, 100), 0) for _ in range(9)]
+    t = Tracker()
+
+    current_colour_text = Text(screen, "Current colour", (25, 883), size=30, text_colour=(230, 230, 250))
+    current_colour = ColourShower((25, 950), t.get_i)
+
+    colour_setters = [ColourSetter((25 + i % 2 * 100, 25 + i // 2 * 100), i, set_target=t.set_i) for i in range(6)]
+
+    U = [ColourGetter((600 + i % 3 * 125, 25 + i // 3 * 125), t.get_i) for i in range(9)]
+
+    R = [ColourGetter((975 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
+
+    L = [ColourGetter((225 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
+
+    F = [ColourGetter((600 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
+
+    B = [ColourGetter((1350 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
+
+    faces = [U, R, L, F, B]
+
+    for i, face in enumerate(faces):
+        face[4].update_value(i)
+        face[4].toggle_lock()
+
     # R = [InputFacelet(1) for _ in range(9)]
     # L = [InputFacelet(2) for _ in range(9)]
     # F = [InputFacelet(3) for _ in range(9)]
@@ -700,9 +762,9 @@ def input_cube_screen():
 
     click = False
 
-    drawable = [escape, *U]
+    drawable = [escape, *colour_setters, current_colour, *U, current_colour_text, *F, *R, *L, *B]
 
-    objects = []
+    objects = [*colour_setters, *U, *F, *R, *L, *B]
 
     while running:
         clock.tick(400)
