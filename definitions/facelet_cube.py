@@ -10,8 +10,6 @@ class Facelet_Cube:
             for i, c in enumerate(string_definition):
                 self.f[i] = Axes[c]
 
-            self.verify()
-            pass
 
         else:
             self.f = [-1] * 54
@@ -24,6 +22,8 @@ class Facelet_Cube:
         for c in count:
             if c != 9:
                 return -1
+
+        return 1
 
     @property
     def corners(self):

@@ -21,16 +21,22 @@ class CubieCube:
 
     def is_solved(self):
         if self.to_data_arr() == (
-        [0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+                [0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
             return True
         else:
             return False
 
+    def verify(self):
+        if self.edge_parity != self.corner_parity:
+            return -1
+        else:
+            return 1
+
     def to_data_arr(self):
         return self.cp, self.co, self.ep, self.eo
 
-    def to_facelet_cube(self, fc) -> str:
+    def to_facelet_string(self, fc) -> str:
         for corner in Corner_Indices:
             for f in range(3):
                 fc.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]

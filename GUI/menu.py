@@ -41,10 +41,17 @@ class Solution:
         self.p = 0
         self.q = math.inf
 
-        self.cubiecube = c.cubiecube
-
         self.moves, self.powers = None, None
         self.formatted_solution = None
+
+        self.current_step = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
+                                 tracking=True, track_target=self.get_current_move, size=70,
+                                 word_limit=1)
+
+        self.scrolling_solution = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
+                                       track_target=self.get_scrolling_moves, size=47)
+
+        self.cubiecube = c.cubiecube
 
         self.raw_solution_tracking_target = c.get_raw_solutions
         self.formatted_solution_tracking_target = c.get_formatted_solutions
@@ -53,13 +60,6 @@ class Solution:
                          Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
                          Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
                          Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
-
-        self.current_step = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
-                                 tracking=True, track_target=self.get_current_move, size=70,
-                                 word_limit=1)
-
-        self.scrolling_solution = Text(screen, None, (600, 980), background_colour=(0, 0, 0), tracking=True,
-                                       track_target=self.get_scrolling_moves, size=47)
 
         self.__empty = True
         self.update()
@@ -137,8 +137,19 @@ class Solution:
             power = [self.move_antithesis[power]]
             c.move(move, power)
 
-    def reset(self, args):
-        self.__init__(self, *args)
+    def reset(self, c):
+        self.cubiecube = c.cubiecube
+
+        self.raw_solution_tracking_target = c.get_raw_solutions
+        self.formatted_solution_tracking_target = c.get_formatted_solutions
+
+        self.cube_arr = [Cube(static=(300, 160), scaling=7, show_all=True, cc=self.cubiecube, solve=True),
+                         Cube(cc=self.cubiecube, static=(900, 300), scaling=5),
+                         Cube(cc=self.cubiecube, static=(1300, 360), scaling=4),
+                         Cube(cc=self.cubiecube, static=(1625, 420), scaling=3)]
+
+        self.__empty = True
+        self.update()
 
     def draw(self):
         self.update()
@@ -193,7 +204,7 @@ class Cube:
                  show_all=False, solve=False):
 
         self.cubiecube = CubieCube(data=cc.to_data_arr()) if cc else CubieCube()
-        self.string = self.cubiecube.to_facelet_cube(Facelet_Cube())
+        self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
         self.convert_string_int()
         self.scaling = scaling
         self.x_constant = 1
@@ -221,9 +232,9 @@ class Cube:
         if solve:
             self.solve_thread = threading.Thread(target=self.find_solutions, daemon=True)
 
-    def clean(self):
-        self.cubiecube = CubieCube()
-        self.string = self.cubiecube.to_facelet_cube(Facelet_Cube())
+    def clean(self, cc=None):
+        self.cubiecube = cc if cc else CubieCube()
+        self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
         self.convert_string_int()
         self.moves = []
         self.power = []
@@ -296,12 +307,12 @@ class Cube:
         self.power += power
         self.cubiecube.MOVE_arr(moves, power)
 
-        self.string = self.cubiecube.to_facelet_cube((Facelet_Cube()))
+        self.string = self.cubiecube.to_facelet_string((Facelet_Cube()))
         self.convert_string_int()
 
     def shuffle(self):
         self.cubiecube.shuffle()
-        self.string = self.cubiecube.to_facelet_cube(Facelet_Cube())
+        self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
         self.convert_string_int()
 
     def dynamic_draw(self):
@@ -459,7 +470,6 @@ class Text:
         self.lines = self.line_cropper(self.text, self.max_width)
 
     def _update_text(self):
-        # print("getting new state", self.text)
         update = self.get_variable_state()
         if update is None:
             return -1
@@ -467,7 +477,6 @@ class Text:
             self.text = self.get_variable_state()
             if self.word_limit:
                 self.text = self.text[:self.word_cropper(self.text, word_count=self.word_limit)]
-            # print("new state", self.text)
             if self.max_width:
                 self.lines = self.line_cropper(self.text, self.max_width)
             return 1
@@ -621,6 +630,7 @@ class TextButton(Button):
 
 class Square:
     size = 100
+    id_iter = count()
 
     colour_map = {0: (255, 255, 255),
                   1: (255, 0, 0),
@@ -628,6 +638,8 @@ class Square:
                   3: (0, 255, 0),
                   4: (0, 0, 255),
                   5: (255, 255, 0)}
+
+    instances = []
 
     def __init__(self, anchor, initial_value=None, outline=None):
 
@@ -648,6 +660,9 @@ class Square:
             self.i = None
             self.colour = None
 
+        self.id = next(self.id_iter)
+        self.instances.append(self)
+
     def is_pressed(self, mx, my):
         if self.rect.collidepoint(mx, my):
             return True
@@ -665,6 +680,19 @@ class Square:
             self.i = update
             self.colour = self.colour_map[self.i]
 
+    def get_value(self):
+        return self.i
+
+    @staticmethod
+    def collect_values():
+        ids = list(range(54))
+        l = [None] * 54
+        for square in Square.instances:
+            if square.id in ids:
+                l[square.id] = square.get_value()
+
+        return l
+
     def run(self):
         pass
 
@@ -680,6 +708,7 @@ class ColourSetter(Square):
 
 
 class ColourShower(Square):
+    size = 200
 
     def __init__(self, anchor, set_target, initial_value=None, outline=(0, 0, 0)):
         super().__init__(anchor, initial_value=initial_value, outline=outline)
@@ -692,11 +721,9 @@ class ColourShower(Square):
 
 
 class ColourGetter(Square):
-    id_iter = count()
-    size = 125
+    size = 106
 
     def __init__(self, anchor, track_target, initial_value=None, outline=(0, 0, 0), locked=False):
-        self.id = next(self.id_iter)
         super().__init__(anchor, initial_value=initial_value, outline=outline)
         self.track_target = track_target
         self.locked = locked
@@ -727,34 +754,49 @@ class Tracker:
 
 
 def input_cube_screen():
+    axis_converter = {0: "U",
+                      1: "R",
+                      2: "L",
+                      3: "F",
+                      4: "B",
+                      5: "D"}
+    size = 116
+    anchorx = 442
+    anchory = 25
     t = Tracker()
 
-    current_colour_text = Text(screen, "Current colour", (25, 883), size=30, text_colour=(230, 230, 250))
-    current_colour = ColourShower((25, 950), t.get_i)
+    U = [ColourGetter((anchorx + i % 3 * size, anchory + i // 3 * size), t.get_i, initial_value=0) for i in range(9)]
+
+    R = [ColourGetter((anchorx + 3 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=1)
+         for i in
+         range(9)]
+
+    L = [ColourGetter((anchorx - 3 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=2)
+         for i in
+         range(9)]
+
+    F = [ColourGetter((anchorx + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=3) for i in
+         range(9)]
+
+    B = [ColourGetter((anchorx + 6 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=4)
+         for i in
+         range(9)]
+
+    D = [ColourGetter((anchorx + i % 3 * size, anchory + 6 * size + i // 3 * size), t.get_i, initial_value=5) for i in
+         range(9)]
+
+    current_colour_text = Text(screen, "Current colour", (25, 721), size=30, text_colour=(230, 230, 250))
+    current_colour = ColourShower((25, 800), t.get_i)
 
     colour_setters = [ColourSetter((25 + i % 2 * 100, 25 + i // 2 * 100), i, set_target=t.set_i) for i in range(6)]
 
-    U = [ColourGetter((600 + i % 3 * 125, 25 + i // 3 * 125), t.get_i) for i in range(9)]
-
-    R = [ColourGetter((975 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
-
-    L = [ColourGetter((225 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
-
-    F = [ColourGetter((600 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
-
-    B = [ColourGetter((1350 + i % 3 * 125, 400 + i // 3 * 125), t.get_i) for i in range(9)]
-
-    faces = [U, R, L, F, B]
+    faces = [U, R, L, F, B, D]
 
     for i, face in enumerate(faces):
         face[4].update_value(i)
         face[4].toggle_lock()
 
-    # R = [InputFacelet(1) for _ in range(9)]
-    # L = [InputFacelet(2) for _ in range(9)]
-    # F = [InputFacelet(3) for _ in range(9)]
-    # B = [InputFacelet(4) for _ in range(9)]
-    # D = [InputFacelet(5) for _ in range(9)]
+    collect_facelets = TextButton(screen, (980, 850), "Collect data", size=60)
 
     running = True
 
@@ -762,9 +804,9 @@ def input_cube_screen():
 
     click = False
 
-    drawable = [escape, *colour_setters, current_colour, *U, current_colour_text, *F, *R, *L, *B]
+    drawable = [escape, *colour_setters, current_colour, *U, current_colour_text, *F, *R, *L, *B, *D, collect_facelets]
 
-    objects = [*colour_setters, *U, *F, *R, *L, *B]
+    objects = [*colour_setters, *U, *F, *R, *L, *B, *D]
 
     while running:
         clock.tick(400)
@@ -776,6 +818,18 @@ def input_cube_screen():
         if click:
             if escape.is_pressed(mx, my):
                 running = False
+
+            if collect_facelets.is_pressed(mx, my):
+                fc_string = Square.collect_values()
+                if None not in fc_string:
+                    fc = Facelet_Cube("".join([axis_converter[i] for i in
+                                               fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
+                    if fc.verify() == 1:
+                        cc = fc.to_cubeie_cube(CubieCube())
+                        if cc.verify() == 1:
+                            return cc
+
+
 
             for obj in objects:
                 if obj.is_pressed(mx, my):
@@ -811,8 +865,7 @@ def solve(cc=None):
 
     escape = TextButton(screen, (screen_width - 215, 20), "Escape", size=30, shadow_colour=(200, 0, 0))
 
-    input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0),
-                            functions=[input_cube_screen])
+    input_cube = TextButton(screen, (50, 980), "Input Cube", text_colour=(255, 255, 255), shadow_colour=(255, 0, 0))
     # currentstep = Text(screen, None, (442, 958), background_colour=(0, 0, 0), text_colour=(220, 170, 170),
     #                    tracking=True,
     #                    track_target=C.get_formatted_solutions, size=70, word_limit=1)
@@ -848,6 +901,14 @@ def solve(cc=None):
         if click:
             if escape.is_pressed(mx, my):
                 running = False
+
+            if input_cube.is_pressed(mx, my):
+                m = input_cube_screen()
+                if m == -1:
+                    continue
+                elif isinstance(m, CubieCube):
+                    C.clean(m)
+                    S.reset(C)
 
             for obj in objects:
                 if obj.is_pressed(mx, my):
