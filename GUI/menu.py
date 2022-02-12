@@ -24,6 +24,30 @@ screen.fill((40, 43, 48))
 clock = pygame.time.Clock()
 
 
+class BooleanTracker:
+    def __init__(self, p=False):
+        self.b = p
+
+    def toggle(self):
+        if self.b:
+            self.b = False
+        else:
+            self.b = True
+
+    def get_status_string(self):
+        if self.b:
+            return "True"
+        else:
+            print("returning false")
+            return "False"
+
+    def get_status_raw(self):
+        return self.b
+
+    def set(self, t):
+        self.b = t
+
+
 class Solution:
     move_antithesis = {1: 3,
                        3: 1,
@@ -741,7 +765,7 @@ class ColourGetter(Square):
             self.locked = True
 
 
-class Tracker:
+class IntegerTracker:
 
     def __init__(self, j=None):
         self.i = j
@@ -763,7 +787,7 @@ def input_cube_screen():
     size = 116
     anchorx = 442
     anchory = 25
-    t = Tracker()
+    t = IntegerTracker()
 
     U = [ColourGetter((anchorx + i % 3 * size, anchory + i // 3 * size), t.get_i, initial_value=0) for i in range(9)]
 
@@ -785,6 +809,11 @@ def input_cube_screen():
     D = [ColourGetter((anchorx + i % 3 * size, anchory + 6 * size + i // 3 * size), t.get_i, initial_value=5) for i in
          range(9)]
 
+    b = BooleanTracker()
+
+    valid_cube = Text(screen, "Valid Cube:", (980, 750), size=35)
+    status = Text(screen, None, (1315, 753), track_target=b.get_status_string, tracking=True, size=30)
+
     current_colour_text = Text(screen, "Current colour", (25, 721), size=30, text_colour=(230, 230, 250))
     current_colour = ColourShower((25, 800), t.get_i)
 
@@ -796,7 +825,7 @@ def input_cube_screen():
         face[4].update_value(i)
         face[4].toggle_lock()
 
-    collect_facelets = TextButton(screen, (980, 850), "Collect data", size=60)
+    collect_facelets = TextButton(screen, (980, 850), "Solve cube", size=60)
 
     running = True
 
@@ -804,7 +833,8 @@ def input_cube_screen():
 
     click = False
 
-    drawable = [escape, *colour_setters, current_colour, *U, current_colour_text, *F, *R, *L, *B, *D, collect_facelets]
+    drawable = [escape, *colour_setters, current_colour, *U, current_colour_text, *F, *R, *L, *B, *D, collect_facelets,
+                status, valid_cube]
 
     objects = [*colour_setters, *U, *F, *R, *L, *B, *D]
 
@@ -813,6 +843,16 @@ def input_cube_screen():
 
         screen.fill((40, 43, 48))
 
+        fc_string = Square.collect_values()
+        if None not in fc_string:
+            fc = Facelet_Cube("".join([axis_converter[i] for i in
+                                       fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
+            cc = fc.to_cubeie_cube(CubieCube())
+            if fc.verify() == 1 and cc.verify() == 1:
+                b.set(True)
+            else:
+                b.set(False)
+
         mx, my = pygame.mouse.get_pos()
 
         if click:
@@ -820,16 +860,11 @@ def input_cube_screen():
                 running = False
 
             if collect_facelets.is_pressed(mx, my):
-                fc_string = Square.collect_values()
-                if None not in fc_string:
+                if b.b:
                     fc = Facelet_Cube("".join([axis_converter[i] for i in
                                                fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
-                    if fc.verify() == 1:
-                        cc = fc.to_cubeie_cube(CubieCube())
-                        if cc.verify() == 1:
-                            return cc
-
-
+                    cc = fc.to_cubeie_cube(CubieCube())
+                    return cc
 
             for obj in objects:
                 if obj.is_pressed(mx, my):
