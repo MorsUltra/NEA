@@ -38,7 +38,6 @@ class BooleanTracker:
         if self.b:
             return "True"
         else:
-            print("returning false")
             return "False"
 
     def get_status_raw(self):
@@ -231,8 +230,8 @@ class Cube:
         self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
         self.convert_string_int()
         self.scaling = scaling
-        self.x_constant = 1
-        self.y_constant = 1
+        self.x_constant = -1
+        self.y_constant = -1
         self.x = 72 * scaling
         self.y = 81 * scaling
         self.moves = []
@@ -244,10 +243,10 @@ class Cube:
         if static:
             self.rect = pygame.Rect(*static, self.x, self.y)
         else:
-            # self.rect = pygame.Rect(200, 200, self.x, self.y)
-            self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1),
-                                    random.randint(1, screen_height - self.y - 1),
-                                    self.x, self.y)
+            self.rect = pygame.Rect(200, 200, self.x, self.y)
+            # self.rect = pygame.Rect(random.randint(1, screen_width - self.x - 1),
+            #                         random.randint(1, screen_height - self.y - 1),
+            #                         self.x, self.y)
 
         resources = os.getcwd() + r"\lib\facelets"
 
@@ -687,6 +686,10 @@ class Square:
         self.id = next(self.id_iter)
         self.instances.append(self)
 
+    @staticmethod
+    def reset_counter():
+        Square.id_iter = count()
+
     def is_pressed(self, mx, my):
         if self.rect.collidepoint(mx, my):
             return True
@@ -778,6 +781,9 @@ class IntegerTracker:
 
 
 def input_cube_screen():
+    Square.instances = []
+    Square.reset_counter()
+
     axis_converter = {0: "U",
                       1: "R",
                       2: "L",
@@ -789,24 +795,24 @@ def input_cube_screen():
     anchory = 25
     t = IntegerTracker()
 
-    U = [ColourGetter((anchorx + i % 3 * size, anchory + i // 3 * size), t.get_i, initial_value=0) for i in range(9)]
+    U = [ColourGetter((anchorx + i % 3 * size, anchory + i // 3 * size), t.get_i) for i in range(9)]
 
-    R = [ColourGetter((anchorx + 3 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=1)
+    R = [ColourGetter((anchorx + 3 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i)
          for i in
          range(9)]
 
-    L = [ColourGetter((anchorx - 3 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=2)
+    L = [ColourGetter((anchorx - 3 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i)
          for i in
          range(9)]
 
-    F = [ColourGetter((anchorx + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=3) for i in
+    F = [ColourGetter((anchorx + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i) for i in
          range(9)]
 
-    B = [ColourGetter((anchorx + 6 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i, initial_value=4)
+    B = [ColourGetter((anchorx + 6 * size + i % 3 * size, anchory + 3 * size + i // 3 * size), t.get_i)
          for i in
          range(9)]
 
-    D = [ColourGetter((anchorx + i % 3 * size, anchory + 6 * size + i // 3 * size), t.get_i, initial_value=5) for i in
+    D = [ColourGetter((anchorx + i % 3 * size, anchory + 6 * size + i // 3 * size), t.get_i) for i in
          range(9)]
 
     b = BooleanTracker()
