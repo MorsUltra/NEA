@@ -1,7 +1,14 @@
 from enum import IntEnum
 from typing import Union, Any
 
+facelet_to_col = ["U", "R", "L", "F", "B", "D", "X"]
+
+
 class Axes(IntEnum):
+    """
+    Integer values of each of the axis for quicker and more memory efficient manipulation.
+    """
+
     U = 0
     R = 1
     L = 2
@@ -10,10 +17,11 @@ class Axes(IntEnum):
     D = 5
 
 
-facelet_to_col = ["U", "R", "L", "F", "B", "D", "X"]
-
-
 class Facelet_Indicies(IntEnum):
+    """
+    Facelets indices that reference the position of a facelet in the string definition of a cube.
+    """
+
     U0 = 0
     U1 = 1
     U2 = 2
@@ -101,6 +109,9 @@ class URF_Facelet_Indices(IntEnum):
 
 
 class Corner_Indices(IntEnum):
+    """
+    Indices of the default corners.
+    """
     URF = 0
     UFL = 1
     ULB = 2
@@ -156,7 +167,7 @@ edge_facelet_indices: list[Union[tuple[Facelet_Indicies, Facelet_Indicies], Any]
     (Facelet_Indicies.B5, Facelet_Indicies.L3),
     (Facelet_Indicies.B3, Facelet_Indicies.R5)]
 
-corner_axes = [
+corner_axes: list[tuple[Axes, Axes, Axes]] = [
     (Axes.U, Axes.R, Axes.F),
     (Axes.U, Axes.F, Axes.L),
     (Axes.U, Axes.L, Axes.B),

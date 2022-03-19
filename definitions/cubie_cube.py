@@ -56,6 +56,7 @@ class CubieCube:
             self.Pcorner_coords = randint(0, 40319)
             self.Pedge_coords = randint(0, 479001599)
             if self.edge_parity != self.corner_parity:
+                # print(self.Pcorner_coords, self.Ocorner_coords, self.Pedge_coords, self.Oedge_coords)
                 continue
             else:
                 break
@@ -73,9 +74,21 @@ class CubieCube:
         self.cp = [self.cp[to_apply.cp[i]] for i in range(8)]
         self.co = [(self.co[to_apply.cp[i]] + to_apply.co[i]) % 3 for i in range(8)]
 
+    def COmove(self, to_apply):
+        self.co = [(self.co[to_apply.cp[i]] + to_apply.co[i]) % 3 for i in range(8)]
+
+    def CPmove(self, to_apply):
+        self.cp = [self.cp[to_apply.cp[i]] for i in range(8)]
+
     def Emove(self, to_apply):
         self.ep = [self.ep[to_apply.ep[i]] for i in range(12)]
         self.eo = [(self.eo[to_apply.ep[i]] + to_apply.eo[i]) % 2 for i in range(12)]
+
+    def EOmove(self, to_apply):
+        self.eo = [(self.eo[to_apply.ep[i]] + to_apply.eo[i]) % 2 for i in range(12)]
+
+    def EPmove(self, to_apply):
+        self.ep = [self.ep[to_apply.ep[i]] for i in range(12)]
 
     @property
     def corner_parity(self) -> int:

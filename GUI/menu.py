@@ -1049,7 +1049,9 @@ def generate():
             elif scramble_cube.is_pressed(mx, my):
                 cc.clean()  # this is replacign cube, no more reference to old cube
                 scramble(cc, int(cnt.get_size()))
-
+                print(cc.cubiecube.Pcorner_coords, cc.cubiecube.Ocorner_coords, cc.cubiecube.Pedge_coords,
+                      cc.cubiecube.Oedge_coords)
+                print(cc.get_text_scramble())
             elif solve_cube.is_pressed(mx,
                                        my):  # these should be in button implementations somehow - how do you pass arguements with buttons?
                 solve(cc.cubiecube)
