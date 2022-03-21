@@ -110,23 +110,36 @@ class CubieCube:
         return parity % 2
 
     @property
-    def Ocorner_coords(self):
+    def Ocorner_coords(self) -> int:
+        """
+        Getter function for corner orientation coordinate.
+        
+        :return: A ternary number from 0 --> 2186 (3^7 - 1).
+        """
+
         co = reduce(lambda variable_base, total: 3 * variable_base + total, self.co[:7])
 
         return co
 
     @Ocorner_coords.setter
-    def Ocorner_coords(self, index):  # working
-        parity = 0
-        self.co = [-1] * 8
-        for _ in range(6, -1, -1):
-            parity += index % 3
-            self.co[_] = index % 3
+    def Ocorner_coords(self, index: int):
+        """
+        Setter function for corner orientation coordinates. Takes an index and changes the cube's corner orientation
+        to reflect that coordinate.
+
+        :param index: index of corner orientation to change to.
+        """
+
+        self.co = [0] * 8
+        # Loop through the 7 most significant bits, leaving the last to be implied.
+        for i in range(6, -1, -1):
+            # Collect the bit at index i which has significance 3^i; the remainder when divided by 3^i.
+            self.co[i] = index % 3
+            # Move to the next bit.
             index //= 3
 
-        parity %= 3
-        parity = self.Ocorner_parity_value[parity]
-        self.co[-1] = parity
+        # Set the least significant bit by finding the bit required to make the sum a multiple of 3.
+        self.co[7] = self.Ocorner_parity_value[sum(self.co) % 3]
 
     @property
     def Pcorner_coords(self):  # working
@@ -163,15 +176,19 @@ class CubieCube:
         return eo
 
     @Oedge_coords.setter
-    def Oedge_coords(self, index):  # working
-        parity = 0
-        self.eo = [-1] * 12
-        for _ in range(10, -1, -1):
-            parity += index % 2
-            self.eo[_] = index % 2
+    def Oedge_coords(self, index: int):
+        """
+        Algorithm to produce binary number of index range 2047 (2^11 - 1).
+
+        :param index: Index of target edge orientation coordinate.
+        """
+        
+        self.eo = [0] * 12
+        for i in range(10, -1, -1):
+            self.eo[i] = index % 2
             index //= 2
 
-        self.eo[-1] = parity % 2
+        self.eo[11] = sum(self.eo) % 2
 
     @property
     def Pedge_coords(self):  # working
