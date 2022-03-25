@@ -1,72 +1,64 @@
-def Ocorner_coords(index: int) -> list[int]:
-    # Average:0.7582400450133718
+from math import comb as CNK
+from itertools import count as counter
 
-    Ocorner_parity_value = [0, 2, 1]
+def POSud_slice_coords(index):
+    # Average: 1.9269003249995875
+    count = 3
+    ep = [False] * 12
 
-    parity = 0
-    co = [-1] * 8
-    for i in range(6, -1, -1):
-        parity += index % 3
-        co[i] = index % 3
-        index //= 3
+    for i in range(11, -1, -1):
+        if count < 0:
+            break
 
-    parity %= 3
-    parity = Ocorner_parity_value[parity]
-    co[-1] = parity
-    return co
+        v = CNK(i, count)
 
+        if index < v:
+            ep[i] = 8 + count
+            count -= 1
+        else:
+            index -= v
 
-def Ocorner_coords2(index: int) -> list[int]:
-    # Average: 0.7458249650080688
+    others = 0
+    for i, edge in enumerate(ep):
+        if not edge:
+            ep[i] = others
+            others += 1
 
-    Ocorner_parity_value = [0, 2, 1]
+    return ep
 
-    parity = 0
-    co = [-1] * 8
-    for i in range(6, -1, -1):
-        remainder = index % 3
-        parity += remainder
-        co[i] = remainder
-        index //= 3
+def POSud_slice_coords2(index):
+    # Average:1.9269003249995875
 
-    parity %= 3
-    parity = Ocorner_parity_value[parity]
-    co[-1] = parity
-    return co
+    count = 4
+    ep = [False] * 12
+    others = 0
 
+    for i in range(11, -1, -1):
+        if not count:
+            for unchecked in range(i+1):
+                ep[unchecked] = others
+                others += 1
+            break
 
-def Ocorner_coords3(index: int) -> list[int]:
-    # Average:0.8358729499974288
+        v = CNK(i, count-1)
 
-    Ocorner_parity_value = [0, 2, 1]
+        if index < v:
+            ep[i] = 7 + count
+            count -= 1
+            
+        else:
+            index -= v
+            ep[i] = others
+            others += 1
 
-    parity = 0
-    co = [-1] * 8
-    for i in range(6, -1, -1):
-        index, remainder = divmod(index, 3)
-        parity += remainder
-        co[i] = remainder
+    return ep
 
-    parity %= 3
-    parity = Ocorner_parity_value[parity]
-    co[-1] = parity
-    return co
-
-
-def Ocorner_coords4(index: int) -> list[int]:
-    # Average:0.6830658300139476
-
-    Ocorner_parity_value = [0, 2, 1]
-
-    co = [0] * 8
-    for i in range(6, -1, -1):
-        co[i] = index % 3
-        index //= 3
-
-    co[7] = Ocorner_parity_value[sum(co) % 3]
-    return co
+print(POSud_slice_coords2(65))
+print(POSud_slice_coords(65))
 
 
-for x in range(2188):
-    if Ocorner_coords(x) != Ocorner_coords4(x):
-        print(f"Error at {x}")
+# for i in range(494):
+#     if POSud_slice_coords(i) != POSud_slice_coords2(i):
+#         print(i)
+#         print(POSud_slice_coords2(i))
+#         print(POSud_slice_coords(i))

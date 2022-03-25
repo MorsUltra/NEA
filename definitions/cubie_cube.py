@@ -182,7 +182,7 @@ class CubieCube:
 
         :param index: Index of target edge orientation coordinate.
         """
-        
+
         self.eo = [0] * 12
         for i in range(10, -1, -1):
             self.eo[i] = index % 2
@@ -278,7 +278,7 @@ class CubieCube:
         self.ep[8] = corners[0]
 
     @property
-    def POSud_slice_coords(self):  # working
+    def POSud_slice_coords(self):
         blank = [False] * 12
         for i, corner in enumerate(self.ep):
             if corner >= 8:
@@ -299,29 +299,44 @@ class CubieCube:
         return coord
 
     @POSud_slice_coords.setter
-    def POSud_slice_coords(self, index):  # working
-        count = 3
-        self.ep = [False] * 12
+    def POSud_slice_coords(self, index: int):
+        """
+        Algorithm to set the position of the UD-slice coordinate from index 0-494.
 
+        :param index: index to change cube to # TODO this thing here needs completing I'm bored.
+        """
+
+        # Set the number of UD-slices to be placed.
+        pieces_remaining = 4
+        # Clean the edge permutation array.
+        self.ep = [False] * 12
+        # Other edges (8) so they can be filled into blanks.
+        other_edges = 0
+
+        # Loop through the edge array backwards.
         for i in range(11, -1, -1):
-            if count < 0:
+            # If there are no pieces left to place.
+            if not pieces_remaining:
+                # Fill in the other edges if some have yet to have been checked.
+                for unchecked in range(i+1):
+                    self.ep[unchecked] = other_edges
+                    other_edges += 1
                 break
 
-            v = CNK(i, count)
+            # Find the number of combinations of the remaining pieces that have a piece at position i.
+            possible_combinations = CNK(i, pieces_remaining - 1)
 
-            if index < v:
-                # noinspection PyTypeChecker
-                self.ep[i] = 8 + count
-                count -= 1
+            # If the index is a part of one of those combinations.
+            if index < possible_combinations:
+                # Mark the position i to have a UD-slice edge placed there.
+                self.ep[i] = 7 + pieces_remaining
+                pieces_remaining -= 1
             else:
-                index -= v
-
-        others = 0
-        for i, edge in enumerate(self.ep):
-            if not edge:
-                # noinspection PyTypeChecker
-                self.ep[i] = others
-                others += 1
+                # Eliminate those combinations from consideration.
+                index -= possible_combinations
+                # Fill in with non-UD-slice edge.
+                self.ep[i] = other_edges
+                other_edges += 1
 
 
 cpU = [Corner_Indices.UBR, Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.DFR,
