@@ -4,35 +4,28 @@ from math import comb as CNK
 from itertools import count as counter
 
 
-def timer(index: int):
-    count = 3
-    ep = [False] * 12
+def timer(ep):
+    # Average: 1.082315575001121
+    coordinate = 0
+    pieces_remaining = 4
 
-    for i in range(11, -1, -1):
-        if count < 0:
+    for i in range(12):
+        if not pieces_remaining:
             break
 
-        v = CNK(i, count)
-
-        if index < v:
-            ep[i] = 8 + count
-            count -= 1
+        if ep[i] >= 8:
+            pieces_remaining -= 1
         else:
-            index -= v
+            coordinate += CNK(i, pieces_remaining - 1)
 
-    c = counter(0)
-    for i, edge in enumerate(ep):
-        if not edge:
-            ep[i] = next(c)
-
-    return ep
+    return coordinate
 
 
 s = []
 try:
     count = 0
     while True:
-        t = timeit("timer(193)", globals=globals())
+        t = timeit("timer([7, 8, 6, 5, 4, 9, 3, 2, 10, 11, 1, 0])", globals=globals())
         s.append(t)
         print(t)
         count += 1

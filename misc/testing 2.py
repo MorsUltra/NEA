@@ -1,64 +1,36 @@
 from math import comb as CNK
 from itertools import count as counter
 
-def POSud_slice_coords(index):
-    # Average: 1.9269003249995875
-    count = 3
-    ep = [False] * 12
 
-    for i in range(11, -1, -1):
-        if count < 0:
-            break
+def Pcorner_coords(index):
+    corners = list(range(8))
+    cp = [-1] * 8
+    coeffs = [0] * 7
 
-        v = CNK(i, count)
+    for i in range(2, 9):
+        coeffs[i - 2] = index % i
+        index //= i
 
-        if index < v:
-            ep[i] = 8 + count
-            count -= 1
-        else:
-            index -= v
+    print(coeffs)
 
-    others = 0
-    for i, edge in enumerate(ep):
-        if not edge:
-            ep[i] = others
-            others += 1
+    for i in range(7, 0, -1):
+        cp[i] = corners.pop(i - coeffs[i - 1])
 
-    return ep
+    cp[0] = corners[0]
 
-def POSud_slice_coords2(index):
-    # Average:1.9269003249995875
+    return cp
 
-    count = 4
-    ep = [False] * 12
-    others = 0
+def Pcorner_coords1(cp):  # working
+    index = 0
+    # Fairly confident this is working. Not the problem
+    for p in range(7, 0, -1):
+        higher = 0
+        for corner in cp[:p]:
+            if corner > cp[p]:
+                higher += 1
 
-    for i in range(11, -1, -1):
-        if not count:
-            for unchecked in range(i+1):
-                ep[unchecked] = others
-                others += 1
-            break
+        index = (index + higher) * p
 
-        v = CNK(i, count-1)
+    return index
 
-        if index < v:
-            ep[i] = 7 + count
-            count -= 1
-            
-        else:
-            index -= v
-            ep[i] = others
-            others += 1
-
-    return ep
-
-print(POSud_slice_coords2(65))
-print(POSud_slice_coords(65))
-
-
-# for i in range(494):
-#     if POSud_slice_coords(i) != POSud_slice_coords2(i):
-#         print(i)
-#         print(POSud_slice_coords2(i))
-#         print(POSud_slice_coords(i))
+print(Pcorner_coords(40319))

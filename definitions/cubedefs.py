@@ -112,6 +112,7 @@ class Corner_Indices(IntEnum):
     """
     Indices of the default corners.
     """
+
     URF = 0
     UFL = 1
     ULB = 2

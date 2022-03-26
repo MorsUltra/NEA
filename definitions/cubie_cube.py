@@ -160,6 +160,7 @@ class CubieCube:
         corners = list(range(8))
         self.cp = [-1] * 8
         coeffs = [0] * 7
+
         for i in range(2, 9):
             coeffs[i - 2] = index % i
             index //= i
@@ -279,24 +280,32 @@ class CubieCube:
 
     @property
     def POSud_slice_coords(self):
-        blank = [False] * 12
-        for i, corner in enumerate(self.ep):
-            if corner >= 8:
-                blank[i] = True
+        """
+        Algorithm to get the UD-slice coordinate of the current edge permutation.
 
-        coord = 0
-        count = 3
+        :return: UD-slice coordinate of the current cube.
+        """
 
+        # Set the running total of the coordinate.
+        coordinate = 0
+        # Set the number of UD-slice edges to find.
+        pieces_remaining = 4
+
+        # Loop backwards through the list.
         for i in range(11, -1, -1):
-            if count < 0:
+            # If there are no more pieces left to find.
+            if not pieces_remaining:
                 break
 
-            if blank[i]:
-                count -= 1
+            # If a piece is a UD-slice edge.
+            if self.ep[i] >= 8:
+                # Decrease count.
+                pieces_remaining -= 1
             else:
-                coord += CNK(i, count)
+                # Add to running total the number of combinations that do not have a piece here.
+                coordinate += CNK(i, pieces_remaining - 1)
 
-        return coord
+        return coordinate
 
     @POSud_slice_coords.setter
     def POSud_slice_coords(self, index: int):
@@ -318,7 +327,7 @@ class CubieCube:
             # If there are no pieces left to place.
             if not pieces_remaining:
                 # Fill in the other edges if some have yet to have been checked.
-                for unchecked in range(i+1):
+                for unchecked in range(i + 1):
                     self.ep[unchecked] = other_edges
                     other_edges += 1
                 break
