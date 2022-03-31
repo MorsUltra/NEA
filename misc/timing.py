@@ -4,28 +4,28 @@ from math import comb as CNK
 from itertools import count as counter
 
 
-def timer(ep):
-    # Average: 1.082315575001121
-    coordinate = 0
-    pieces_remaining = 4
+def timer(index):
+    corners = list(range(8))
+    cp = [-1] * 8
+    coeffs = [0] * 7
 
-    for i in range(12):
-        if not pieces_remaining:
-            break
+    for i in range(2, 9):
+        coeffs[i - 2] = index % i
+        index //= i
 
-        if ep[i] >= 8:
-            pieces_remaining -= 1
-        else:
-            coordinate += CNK(i, pieces_remaining - 1)
+    for i in range(7, 0, -1):
+        cp[i] = corners.pop(i - coeffs[i - 1])
 
-    return coordinate
+    cp[0] = corners[0]
+
+    return cp
 
 
 s = []
 try:
     count = 0
     while True:
-        t = timeit("timer([7, 8, 6, 5, 4, 9, 3, 2, 10, 11, 1, 0])", globals=globals())
+        t = timeit("timer(21312)", globals=globals())
         s.append(t)
         print(t)
         count += 1

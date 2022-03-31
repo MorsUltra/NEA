@@ -1,8 +1,4 @@
-from math import comb as CNK
-from itertools import count as counter
-
-
-def Pcorner_coords(index):
+def Pcorner_coordsd1(index):
     corners = list(range(8))
     cp = [-1] * 8
     coeffs = [0] * 7
@@ -12,13 +8,30 @@ def Pcorner_coords(index):
         index //= i
 
     print(coeffs)
-
     for i in range(7, 0, -1):
         cp[i] = corners.pop(i - coeffs[i - 1])
 
     cp[0] = corners[0]
 
     return cp
+
+def Pcorner_coordst1(index):
+    corners = list(range(7, -1, -1))
+    cp = [-1] * 8
+    coeffs = []
+
+    for i in range(2, 9):
+        coeffs.insert(0, index % i)
+        index //= i
+
+    print(coeffs)
+    for i in range(7):
+        cp[7-i] = corners.pop(coeffs[i])
+
+    cp[0] = corners[0]
+
+    return cp
+
 
 def Pcorner_coords1(cp):  # working
     index = 0
@@ -33,4 +46,10 @@ def Pcorner_coords1(cp):  # working
 
     return index
 
-print(Pcorner_coords(40319))
+
+print(Pcorner_coordsd1(3651))
+print(Pcorner_coordst1(3651))
+
+# for x in range(40319):
+#     if Pcorner_coordsd1(x) != Pcorner_coordst1(x):
+#         print(f"Error at {x}")
