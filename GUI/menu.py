@@ -853,7 +853,7 @@ def input_cube_screen():
         if None not in fc_string:
             fc = Facelet_Cube("".join([axis_converter[i] for i in
                                        fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
-            cc = fc.to_cubeie_cube(CubieCube())
+            cc = fc.to_cubie_cube(CubieCube())
             if fc.verify() == 1 and cc.verify() == 1:
                 b.set(True)
             else:
@@ -869,7 +869,7 @@ def input_cube_screen():
                 if b.b:
                     fc = Facelet_Cube("".join([axis_converter[i] for i in
                                                fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
-                    cc = fc.to_cubeie_cube(CubieCube())
+                    cc = fc.to_cubie_cube(CubieCube())
                     return cc
 
             for obj in objects:

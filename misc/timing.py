@@ -1,20 +1,17 @@
-from functools import reduce
 from timeit import timeit
-from math import comb as CNK
-from itertools import count as counter
 
 
 def timer(index):
-    corners = list(range(8))
     cp = [-1] * 8
-    coeffs = [0] * 7
+    factoradic = [0] * 7
 
     for i in range(2, 9):
-        coeffs[i - 2] = index % i
+        factoradic[i - 2] = index % i
         index //= i
 
+    corners = list(range(8))
     for i in range(7, 0, -1):
-        cp[i] = corners.pop(i - coeffs[i - 1])
+        cp[i] = corners.pop(i - factoradic[i - 1])
 
     cp[0] = corners[0]
 
@@ -25,7 +22,7 @@ s = []
 try:
     count = 0
     while True:
-        t = timeit("timer(21312)", globals=globals())
+        t = timeit("timer(40319)", globals=globals())
         s.append(t)
         print(t)
         count += 1

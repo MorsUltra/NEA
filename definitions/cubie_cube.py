@@ -114,7 +114,7 @@ class CubieCube:
         """
         Getter function for corner orientation coordinate.
         
-        :return: A ternary number from 0 --> 2186 (3^7 - 1).
+        :return: An integer number from 0 --> 2186 (3^7 - 1).
         """
 
         co = reduce(lambda variable_base, total: 3 * variable_base + total, self.co[:7])
@@ -142,32 +142,54 @@ class CubieCube:
         self.co[7] = self.Ocorner_parity_value[sum(self.co) % 3]
 
     @property
-    def Pcorner_coords(self):  # working
+    def Pcorner_coords(self) -> int:
+        """
+        Getter function for corner permutation coordinate.
+
+        @return: A decimal number from 0 --> 40319 (8! - 1).
+        """
+
         index = 0
-        # Fairly confident this is working. Not the problem
+
         for p in range(7, 0, -1):
-            higher = 0
+            more_significant_edges = 0
             for corner in self.cp[:p]:
                 if corner > self.cp[p]:
-                    higher += 1
+                    more_significant_edges += 1
 
-            index = (index + higher) * p
+            index = (index + more_significant_edges) * p
 
         return index
 
     @Pcorner_coords.setter
-    def Pcorner_coords(self, index):
-        corners = list(range(8))
-        self.cp = [-1] * 8
-        coeffs = [0] * 7
+    def Pcorner_coords(self, index: int):
+        """
+        Algorithm to set the permutation of corners of the coordinate between 0-40319.
 
-        for i in range(2, 9):
-            coeffs[i - 2] = index % i
-            index //= i
+        @param index: coordinate of corner permutation.
+        """
 
+        # Create an empty list of corners.
+        corners = [7, 6, 5, 4, 3, 2, 1, 0]
+        # Create empty factoradic number.
+        factoradic = []
+
+        # Increase the radix with each of the 7 steps.
+        for mixed_radix in range(2, 8):
+            # Add the remainder to the factoradic to record how many (mixed_radix!) are a part of the number.
+            factoradic.append(index % mixed_radix)
+            # Remove (mixed_radix!) as a factor from index.
+            index //= mixed_radix
+
+        # Add the final remainder to the factoradic.
+        factoradic.append(index)
+
+        # For each coefficient in the factoradic
         for i in range(7, 0, -1):
-            self.cp[i] = corners.pop(i - coeffs[i - 1])
+            # Pop the relevant corner from the list per the factoradic number.
+            self.cp[i] = corners.pop(factoradic[i - 1])
 
+        # Append the final corner.
         self.cp[0] = corners[0]
 
     @property
@@ -206,14 +228,14 @@ class CubieCube:
         return ep
 
     @Pedge_coords.setter
-    def Pedge_coords(self, index):  # working
-        corners = list(range(12))
+    def Pedge_coords(self, index: int):
         self.ep = [-1] * 12
         coeffs = [0] * 11
         for i in range(2, 13):
             coeffs[i - 2] = index % i
             index //= i
 
+        corners = list(range(12))
         for i in range(11, 0, -1):
             self.ep[i] = corners.pop(i - coeffs[i - 1])
 

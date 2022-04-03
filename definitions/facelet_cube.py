@@ -1,6 +1,6 @@
-from typing import List
-
+# Import all the default pieces.
 from definitions.cubedefs import *
+from definitions.cubie_cube import CubieCube
 
 
 class Facelet_Cube:
@@ -15,6 +15,7 @@ class Facelet_Cube:
 
         :param string_definition: definition of a cube in facelet string form.
         """
+
         self.f: list[int] = [0] * 54
 
         if string_definition:
@@ -27,6 +28,8 @@ class Facelet_Cube:
     def verify(self) -> int:
         """
         Function to determine the validity of a cube defined as a string.
+
+        :return: -1 if not a valid string; 1 if a valid string.
         """
 
         # Count the frequency of each value.
@@ -73,7 +76,7 @@ class Facelet_Cube:
 
         return edges
 
-    def to_cubie_cube(self, cc):
+    def to_cubie_cube(self, cc: CubieCube):
         """
         Function to convert FaceletCube into CubieCube
 
