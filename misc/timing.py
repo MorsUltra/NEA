@@ -1,28 +1,24 @@
 from timeit import timeit
 
 
-def timer(index):
-    cp = [-1] * 8
-    factoradic = [0] * 7
+def timer(ep):
+    index = 0
+    for p in range(11, 8, -1):
+        higher = 0
+        for edge in ep[8:p]:
+            if edge > ep[p]:
+                higher += 1
 
-    for i in range(2, 9):
-        factoradic[i - 2] = index % i
-        index //= i
+        index = (index + higher) * (p-8)
 
-    corners = list(range(8))
-    for i in range(7, 0, -1):
-        cp[i] = corners.pop(i - factoradic[i - 1])
-
-    cp[0] = corners[0]
-
-    return cp
+    return index
 
 
 s = []
 try:
     count = 0
     while True:
-        t = timeit("timer(40319)", globals=globals())
+        t = timeit("timer([0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 8, 11])", globals=globals())
         s.append(t)
         print(t)
         count += 1

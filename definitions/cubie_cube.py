@@ -127,7 +127,7 @@ class CubieCube:
         Setter function for corner orientation coordinates. Takes an index and changes the cube's corner orientation
         to reflect that coordinate.
 
-        :param index: index of corner orientation to change to.
+        @param index: index of corner orientation to change to.
         """
 
         self.co = [0] * 8
@@ -146,7 +146,7 @@ class CubieCube:
         """
         Getter function for corner permutation coordinate.
 
-        @return: A decimal number from 0 --> 40319 (8! - 1).
+        :return: A decimal number from 0 --> 40319 (8! - 1).
         """
 
         index = 0
@@ -184,7 +184,7 @@ class CubieCube:
         # Add the final remainder to the factoradic.
         factoradic.append(index)
 
-        # For each coefficient in the factoradic
+        # For each coefficient in the factoradic.
         for i in range(7, 0, -1):
             # Pop the relevant corner from the list per the factoradic number.
             self.cp[i] = corners.pop(factoradic[i - 1])
@@ -203,7 +203,7 @@ class CubieCube:
         """
         Algorithm to produce binary number of index range 2047 (2^11 - 1).
 
-        :param index: Index of target edge orientation coordinate.
+        @param index: Index of target edge orientation coordinate.
         """
 
         self.eo = [0] * 12
@@ -214,98 +214,164 @@ class CubieCube:
         self.eo[11] = sum(self.eo) % 2
 
     @property
-    def Pedge_coords(self):  # working
-        ep = 0
+    def Pedge_coords(self) -> int:
+        """
+        Getter function for the corner permutation coordinate.
+        
+        :return: A decimal number from 0 --> 479001599 (12! - 1).
+        """
+
+        index = 0
 
         for p in range(11, 0, -1):
-            higher = 0
+            more_significant_edges = 0
             for edge in self.ep[:p]:
                 if edge > self.ep[p]:
-                    higher += 1
+                    more_significant_edges += 1
 
-            ep = (ep + higher) * p
+            index = (index + more_significant_edges) * p
 
-        return ep
+        return index
 
     @Pedge_coords.setter
     def Pedge_coords(self, index: int):
-        self.ep = [-1] * 12
-        coeffs = [0] * 11
-        for i in range(2, 13):
-            coeffs[i - 2] = index % i
-            index //= i
+        """
+        Function to set the permutation of the edges based off of the coordinate between 0-479001599 (12! - 1)
 
-        corners = list(range(12))
+        :param index: the coordinate of the corner permutation.
+        """
+
+        # Create empty list of edges
+        edges = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+        # Create empty factoradic number.
+        factoradic = []
+
+        # Increase the radic with each of the 11 steps
+        for mixed_radix in range(2, 12):
+            # Add the remainder to the factoradic to record how many (mixed_radix!) are a part of the number.
+            factoradic.append(index % mixed_radix)
+            # Remove (mixed_radix!) as a factor from index.
+            index //= mixed_radix
+
+        # Add the final remainder to the factoradic.
+        factoradic.append(index)
+
+        # For each coefficient in the factoradic.
         for i in range(11, 0, -1):
-            self.ep[i] = corners.pop(i - coeffs[i - 1])
+            # Pop the relevant edge from the list per the factoradic number.
+            self.ep[i] = edges.pop(factoradic[i - 1])
 
-        self.ep[0] = corners[0]
+        # Append the final corner.
+        self.ep[0] = edges[0]
 
     # ---------------------------------------------------------
 
     @property
-    def P8edge_coords(self):
-        coord = 0
+    def P8edge_coords(self) -> int:
+        """
+        Getter function for the 8-edge permutation coordinate.
+
+        :return: A decimal from 0 --> 40319 (8! - 1).
+        """
+
+        index = 0
 
         for p in range(7, 0, -1):
-            higher = 0
+            more_significant_edges = 0
             for edge in self.ep[:p]:
                 if edge > self.ep[p]:
-                    higher += 1
+                    more_significant_edges += 1
 
-            coord = (coord + higher) * p
+            index = (index + more_significant_edges) * p
 
-        return coord
+        return index
 
     @P8edge_coords.setter
-    def P8edge_coords(self, index):
-        corners = list(range(8))
-        self.ep[:8] = [-1] * 8
-        coeffs = [0] * 7
-        for i in range(2, 9):
-            coeffs[i - 2] = index % i
-            index //= i
+    def P8edge_coords(self, index: int):
+        """
+        Function to set the permutation of the edges based off of the coordinate between 0 --> 40319 (8! - 1).
 
+        :param index: the coordinate of the 8-edge permutation.
+        """
+
+        # Create empty list of 8-edges.
+        edges = [7, 6, 5, 4, 3, 2, 1, 0]
+        # Create empty factoradic number
+        factoradic = []
+
+        # Increase the radix with each of the 8 steps.
+        for mixed_radix in range(2, 9):
+            # Add the remainder to the factoradic to record how many (mixed_radix!) are a part of the number.
+            factoradic.append(index % mixed_radix)
+            # Remove (mixed_radix!) as a factor from index.
+            index //= mixed_radix
+
+        # Add the final remainder to the factoradic.
+        factoradic.append(index)
+
+        # For each coefficient in the factoradic.
         for i in range(7, 0, -1):
-            self.ep[i] = corners.pop(i - coeffs[i - 1])
+            # Pop the relevant edge from the list per the factoradic number.
+            self.ep[i] = edges.pop(factoradic[i - 1])
 
-        self.ep[0] = corners[0]
+        # Append the final corner.
+        self.ep[0] = edges[0]
 
     @property
-    def P4edge_coords(self):
-        cord = 0
+    def P4edge_coords(self) -> int:
+        """
+        Getter function for the UD-slice edge permutation coordinate.
+
+        :return: A decimal from 0 --> 23 (4! - 1)
+        """
+
+        # Separate the UD-slice edges.
         ep = self.ep[8:]
+
+        index = 0
+
         for p in range(3, 0, -1):
-            higher = 0
+            more_significant_edges = 0
             for edge in ep[:p]:
                 if edge > ep[p]:
-                    higher += 1
+                    more_significant_edges += 1
 
-            cord = (cord + higher) * p
+            index = (index + more_significant_edges) * p
 
-        return cord
+        return index
 
     @P4edge_coords.setter
-    def P4edge_coords(self, index):
-        self.ep[8:] = [-1] * 4
+    def P4edge_coords(self, index: int):
+        """
+        Function to set the permutation of the UD-slice edge permutation based off of the coordinate between 0 --> 23
+        (4! - 1).
 
-        corners = list(range(8, 12))
-        coeffs = [0] * 3
-        for i in range(2, 5):
-            coeffs[i - 2] = index % i
-            index //= i
+        :param index: the coordinate of the UD-slice edge permutation.
+        """
+
+        # Create an empty list of UD-slice edges.
+        edges = [8, 9, 10, 11]
+        # Create empty factoradic
+        factoradic = []
+
+        # Increase the radix with each of the 3 steps.
+        for mixed_radix in range(2, 5):
+            # Add the remainder to the factoradic to record how many (mixed_radix!) are a part of the number.
+            factoradic.append(index % mixed_radix)
+            # Remove (mixed_radix!) as a factor from index.
+            index //= mixed_radix
 
         for i in range(3, 0, -1):
-            self.ep[8 + i] = corners.pop(i - coeffs[i - 1])
+            self.ep[8 + i] = edges.pop(factoradic[i-1])
 
-        self.ep[8] = corners[0]
+        self.ep[8] = edges[0]
 
     @property
-    def POSud_slice_coords(self):
+    def POSud_slice_coords(self) -> int:
         """
         Algorithm to get the UD-slice coordinate of the current edge permutation.
 
-        :return: UD-slice coordinate of the current cube.
+        :return: the UD-slice coordinate of the current cube.
         """
 
         # Set the running total of the coordinate.
