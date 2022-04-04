@@ -350,7 +350,7 @@ class CubieCube:
         """
 
         # Create an empty list of UD-slice edges.
-        edges = [8, 9, 10, 11]
+        edges = [11, 10, 9, 8]
         # Create empty factoradic
         factoradic = []
 
