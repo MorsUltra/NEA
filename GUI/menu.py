@@ -226,7 +226,7 @@ class Cube:
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
 
-        self.cubiecube = CubieCube(data=cc.to_data_arr()) if cc else CubieCube()
+        self.cubiecube = CubieCube(data=cc.to_data_arrary()) if cc else CubieCube()
         self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
         self.convert_string_int()
         self.scaling = scaling

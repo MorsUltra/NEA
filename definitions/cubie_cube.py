@@ -1,72 +1,134 @@
 from functools import reduce
 from math import comb as CNK
 from random import randint
+from typing import Type
 
 from definitions.cubedefs import *
 
 
 class CubieCube:
-    MOVES = []
+    """
+    CubieCube class to handle cube based on it's cubies and coordinates.
+    """
 
-    Ocorner_parity_value = [0, 2, 1]
+    __MOVES = []
+
+    # Set corner values to create parity.
+    __Ocorner_parity_value = [0, 2, 1]
 
     def __init__(self, data=None, moves=None):
-        self.cp = data[0] if data else list(range(0, 8))
-        self.co = data[1] if data else [0] * 8
-        self.ep = data[2] if data else list(range(0, 12))  # TODO not sure if you need the list
-        self.eo = data[3] if data else [0] * 12
+        self.cp = data[0] if data else [0, 1, 2, 3, 4, 5, 6, 7]
+        self.co = data[1] if data else [0, 0, 0, 0, 0, 0, 0, 0]
+        self.ep = data[2] if data else [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        self.eo = data[3] if data else [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         if moves:
             self.MOVE_arr(*moves)
 
-    def is_solved(self):
-        if self.to_data_arr() == (
-                [0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    def is_solved(self) -> bool:
+        """
+        Function to check whether the cube is solved by default.
+
+        :return: True if solved; False if not solved.
+        """
+
+        if self.to_data_arrary() == (
+                [0, 1, 2, 3, 4, 5, 6, 7],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
             return True
         else:
             return False
 
-    def verify(self):
+    def verify(self) -> int:
+        """
+        Function to check whether cube is solvable via traditional means.
+
+        :return: -1 if not solvable; 1 if solvable.
+        """
+
+        # If the edge parity is not equal the corner party the cube cannot be solved via traditional methods.
         if self.edge_parity != self.corner_parity:
             return -1
         else:
             return 1
 
-    def to_data_arr(self):
+    def to_data_arrary(self) -> tuple[list, list, list, list]:
+        """
+        Function to get the data of the cube in terms of its arrays of cubies.
+
+        :return: Tuple of cube data - corner permutations, corner orientations, edge permutations, edge orientations.
+        """
+
         return self.cp, self.co, self.ep, self.eo
 
-    def to_facelet_string(self, fc) -> str:
+    def to_facelet_string(self, facelet_cube) -> str:
+        """
+        Function to handle transition to FaceletCube object.
+
+        :param facelet_cube: FaceletCube object to apply current cube data to.
+        :return: Current cube in FaceletCube object form.
+        """
+
+        # Loop through the corners.
         for corner in Corner_Indices:
+            # For each of the three facelets on the corner.
             for f in range(3):
-                fc.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]
+                # Set the facelet in the string, with index as defined by the corner_facelet_indices,
+                # as the respective facelet on the corner in iteration.
+                facelet_cube.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]
 
+        # Loop through the edges.
         for edge in Edge_Indices:
+            # For each of the two facelets on the edge.
             for e in range(2):
-                fc.f[edge_facelet_indices[edge][(self.eo[edge] + e) % 2]] = edge_axes[self.ep[edge]][e]
+                # Set the facelet in the string, with index as defined by the edge_facelet_indices,
+                # as the respective facelet on the corner in iteration.
+                facelet_cube.f[edge_facelet_indices[edge][(self.eo[edge] + e) % 2]] = edge_axes[self.ep[edge]][e]
 
-        fc.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in enumerate(fc.f)]
+        # Change the string from Axis format to Colour format to allow for display.
+        facelet_cube.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in enumerate(facelet_cube.f)]
 
-        return "".join(fc.f)
+        return "".join(facelet_cube.f)
 
     def shuffle(self):
+        """
+        Method to shuffle cube object with no scramble string. I.e. random, valid coordinates have been picked for
+        the cube.
+        """
+
+        # Pick random corner orientation and edge coordinates - the two are perfectly independent until permutation.
         self.Ocorner_coords = randint(0, 2186)
         self.Oedge_coords = randint(0, 2047)
+
+        # Find a combination of corner and edge permutations that is valid.
         while True:
             self.Pcorner_coords = randint(0, 40319)
             self.Pedge_coords = randint(0, 479001599)
             if self.edge_parity != self.corner_parity:
-                # print(self.Pcorner_coords, self.Ocorner_coords, self.Pedge_coords, self.Oedge_coords)
                 continue
             else:
                 break
 
-    def MOVE_arr(self, moves, powers):
+    def MOVE_arr(self, moves: list, powers: list):
+        """
+        Method to apply a sequence of moves to the cube.
+
+        :param moves: Moves to apply to the cube.
+        :param powers: The power of the moves to apply to the cube.
+        """
+
         for i, move in enumerate(moves):
             for power in range(powers[i]):
-                self.MOVE(MOVES[move])
+                self.MOVE(self.__MOVES[move])
 
-    def MOVE(self, to_apply):
+    def MOVE(self, to_apply: CubieCube):
+        """
+        Method to apply a move to the cube.
+
+        :param to_apply: The move, in cube form, to be applied to the cube.
+        """
         self.Cmove(to_apply)
         self.Emove(to_apply)
 
@@ -139,7 +201,7 @@ class CubieCube:
             index //= 3
 
         # Set the least significant bit by finding the bit required to make the sum a multiple of 3.
-        self.co[7] = self.Ocorner_parity_value[sum(self.co) % 3]
+        self.co[7] = self.__Ocorner_parity_value[sum(self.co) % 3]
 
     @property
     def Pcorner_coords(self) -> int:
@@ -361,9 +423,12 @@ class CubieCube:
             # Remove (mixed_radix!) as a factor from index.
             index //= mixed_radix
 
+        # For each coefficient in the factoradic.
         for i in range(3, 0, -1):
-            self.ep[8 + i] = edges.pop(factoradic[i-1])
+            # Pop the relevant UD-slice edges from the list per the factoradic number.
+            self.ep[8 + i] = edges.pop(factoradic[i - 1])
 
+        # Append the final corner.
         self.ep[8] = edges[0]
 
     @property
@@ -436,6 +501,7 @@ class CubieCube:
                 other_edges += 1
 
 
+# Create the U move.
 cpU = [Corner_Indices.UBR, Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.DFR,
        Corner_Indices.DLF, Corner_Indices.DBL, Corner_Indices.DRB]
 coU = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -443,6 +509,7 @@ epU = [Edge_Indices.UB, Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_
        Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.BR]
 eoU = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+# Create the R move.
 cpR = [Corner_Indices.DFR, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.URF, Corner_Indices.DRB,
        Corner_Indices.DLF, Corner_Indices.DBL, Corner_Indices.UBR]
 coR = [2, 0, 0, 1, 1, 0, 0, 2]
@@ -450,6 +517,7 @@ epR = [Edge_Indices.FR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.UB, Edge_
        Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.DR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.UR]
 eoR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+# Create the F move.
 cpF = [Corner_Indices.UFL, Corner_Indices.DLF, Corner_Indices.ULB, Corner_Indices.UBR, Corner_Indices.URF,
        Corner_Indices.DFR, Corner_Indices.DBL, Corner_Indices.DRB]
 coF = [1, 2, 0, 0, 2, 1, 0, 0]
@@ -457,6 +525,7 @@ epF = [Edge_Indices.UR, Edge_Indices.FL, Edge_Indices.UL, Edge_Indices.UB, Edge_
        Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.UF, Edge_Indices.DF, Edge_Indices.BL, Edge_Indices.BR]
 eoF = [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0]
 
+# Create the D move.
 cpD = [Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.UBR, Corner_Indices.DLF,
        Corner_Indices.DBL, Corner_Indices.DRB, Corner_Indices.DFR]
 coD = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -464,6 +533,7 @@ epD = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.UB, Edge_
        Edge_Indices.DB, Edge_Indices.DR, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.BR]
 eoD = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+# Create the L move.
 cpL = [Corner_Indices.URF, Corner_Indices.ULB, Corner_Indices.DBL, Corner_Indices.UBR, Corner_Indices.DFR,
        Corner_Indices.UFL, Corner_Indices.DLF, Corner_Indices.DRB]
 coL = [0, 1, 2, 0, 0, 2, 1, 0]
@@ -471,6 +541,7 @@ epL = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.BL, Edge_Indices.UB, Edge_
        Edge_Indices.FL, Edge_Indices.DB, Edge_Indices.FR, Edge_Indices.UL, Edge_Indices.DL, Edge_Indices.BR]
 eoL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+# Create the B move.
 cpB = [Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.UBR, Corner_Indices.DRB, Corner_Indices.DFR,
        Corner_Indices.DLF, Corner_Indices.ULB, Corner_Indices.DBL]
 coB = [0, 0, 1, 2, 0, 0, 2, 1]
@@ -478,6 +549,7 @@ epB = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.BR, Edge_
        Edge_Indices.DL, Edge_Indices.BL, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.UB, Edge_Indices.DB]
 eoB = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
 
+# Initialise the moves as cubes.
 Umove = CubieCube(data=[cpU, coU, epU, eoU])
 Rmove = CubieCube(data=[cpR, coR, epR, eoR])
 Lmove = CubieCube(data=[cpL, coL, epL, eoL])
@@ -485,11 +557,12 @@ Fmove = CubieCube(data=[cpF, coF, epF, eoF])
 Bmove = CubieCube(data=[cpB, coB, epB, eoB])
 Dmove = CubieCube(data=[cpD, coD, epD, eoD])
 
-MOVES = [Umove,
-         Rmove,
-         Lmove,
-         Fmove,
-         Bmove,
-         Dmove]
+__MOVES = [Umove,
+           Rmove,
+           Lmove,
+           Fmove,
+           Bmove,
+           Dmove]
 
-CubieCube.moves = MOVES
+# Append moves to
+CubieCube.moves = __MOVES

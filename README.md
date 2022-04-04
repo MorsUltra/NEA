@@ -75,7 +75,7 @@ def Ocorner_coords(self, index):
         index //= 3
 
     parity %= 3
-    parity = self.Ocorner_parity_value[parity]
+    parity = self.__Ocorner_parity_value[parity]
     self.co[-1] = parity
 ```
 
@@ -643,7 +643,3 @@ This process of reasoning leads us to the conclusion that every single permutati
 Coordinates allow us to navigate this problem. The tuple comprised of the three phase-1 coordinates direct us to some coset `H*M` of H, and our object is to find the sequence of moves `M'` that return our coordinates to the normal subgroup - we know this has occured when the tuple renders to `(0, 0, 0)`. 
 
 We might repeat this process for phase two, using our member of the subgroup H to navigate through it the alternative subgroup Q, which generates 10,863,756,288,000 cosets of 3,981,312 elements each under the premise that we only use half turns of the side faces and any turn for the top and bottom - changing the position of pieces but maintaining their orientation. Given these factors and the premise that the orientations are set from phase one, by again finding the inverse of the sequences of moves such that we might return the cube to a solved state.   
-
-
-
-

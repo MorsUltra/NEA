@@ -11,7 +11,7 @@ class Solver:
         self.phase1_searcher = Phase1
         self.phase2_searcher = Phase2
 
-        self.cc_data = cube.to_data_arr()
+        self.cc_data = cube.to_data_arrary()
 
         self.final_solutions = []
 
