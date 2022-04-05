@@ -1,6 +1,7 @@
 from functools import reduce
 from math import comb as CNK
 from random import randint
+from definitions.moves import MOVES
 from typing import Type
 
 from definitions.cubedefs import *
@@ -11,12 +12,11 @@ class CubieCube:
     CubieCube class to handle cube based on it's cubies and coordinates.
     """
 
-    __MOVES = []
 
     # Set corner values to create parity.
     __Ocorner_parity_value = [0, 2, 1]
 
-    def __init__(self, data=None, moves=None):
+    def __init__(self, data: list[list, list, list, list] = None, moves: list = None):
         self.cp = data[0] if data else [0, 1, 2, 3, 4, 5, 6, 7]
         self.co = data[1] if data else [0, 0, 0, 0, 0, 0, 0, 0]
         self.ep = data[2] if data else [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -77,7 +77,8 @@ class CubieCube:
             for f in range(3):
                 # Set the facelet in the string, with index as defined by the corner_facelet_indices,
                 # as the respective facelet on the corner in iteration.
-                facelet_cube.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = corner_axes[self.cp[corner]][f]
+                facelet_cube.f[corner_facelet_indices[corner][(self.co[corner] + f) % 3]] = \
+                    corner_axes[self.cp[corner]][f]
 
         # Loop through the edges.
         for edge in Edge_Indices:
@@ -88,7 +89,8 @@ class CubieCube:
                 facelet_cube.f[edge_facelet_indices[edge][(self.eo[edge] + e) % 2]] = edge_axes[self.ep[edge]][e]
 
         # Change the string from Axis format to Colour format to allow for display.
-        facelet_cube.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in enumerate(facelet_cube.f)]
+        facelet_cube.f = [facelet_to_col[col] if col != -1 else facelet_to_col[i // 9] for i, col in
+                          enumerate(facelet_cube.f)]
 
         return "".join(facelet_cube.f)
 
@@ -121,9 +123,9 @@ class CubieCube:
 
         for i, move in enumerate(moves):
             for power in range(powers[i]):
-                self.MOVE(self.__MOVES[move])
+                self.MOVE(MOVES[move])
 
-    def MOVE(self, to_apply: CubieCube):
+    def MOVE(self, to_apply: object):
         """
         Method to apply a move to the cube.
 
@@ -499,70 +501,3 @@ class CubieCube:
                 # Fill in with non-UD-slice edge.
                 self.ep[i] = other_edges
                 other_edges += 1
-
-
-# Create the U move.
-cpU = [Corner_Indices.UBR, Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.DFR,
-       Corner_Indices.DLF, Corner_Indices.DBL, Corner_Indices.DRB]
-coU = [0, 0, 0, 0, 0, 0, 0, 0]
-epU = [Edge_Indices.UB, Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.DR, Edge_Indices.DF,
-       Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.BR]
-eoU = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-# Create the R move.
-cpR = [Corner_Indices.DFR, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.URF, Corner_Indices.DRB,
-       Corner_Indices.DLF, Corner_Indices.DBL, Corner_Indices.UBR]
-coR = [2, 0, 0, 1, 1, 0, 0, 2]
-epR = [Edge_Indices.FR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.UB, Edge_Indices.BR, Edge_Indices.DF,
-       Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.DR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.UR]
-eoR = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-# Create the F move.
-cpF = [Corner_Indices.UFL, Corner_Indices.DLF, Corner_Indices.ULB, Corner_Indices.UBR, Corner_Indices.URF,
-       Corner_Indices.DFR, Corner_Indices.DBL, Corner_Indices.DRB]
-coF = [1, 2, 0, 0, 2, 1, 0, 0]
-epF = [Edge_Indices.UR, Edge_Indices.FL, Edge_Indices.UL, Edge_Indices.UB, Edge_Indices.DR, Edge_Indices.FR,
-       Edge_Indices.DL, Edge_Indices.DB, Edge_Indices.UF, Edge_Indices.DF, Edge_Indices.BL, Edge_Indices.BR]
-eoF = [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0]
-
-# Create the D move.
-cpD = [Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.UBR, Corner_Indices.DLF,
-       Corner_Indices.DBL, Corner_Indices.DRB, Corner_Indices.DFR]
-coD = [0, 0, 0, 0, 0, 0, 0, 0]
-epD = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.UB, Edge_Indices.DF, Edge_Indices.DL,
-       Edge_Indices.DB, Edge_Indices.DR, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.BL, Edge_Indices.BR]
-eoD = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-# Create the L move.
-cpL = [Corner_Indices.URF, Corner_Indices.ULB, Corner_Indices.DBL, Corner_Indices.UBR, Corner_Indices.DFR,
-       Corner_Indices.UFL, Corner_Indices.DLF, Corner_Indices.DRB]
-coL = [0, 1, 2, 0, 0, 2, 1, 0]
-epL = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.BL, Edge_Indices.UB, Edge_Indices.DR, Edge_Indices.DF,
-       Edge_Indices.FL, Edge_Indices.DB, Edge_Indices.FR, Edge_Indices.UL, Edge_Indices.DL, Edge_Indices.BR]
-eoL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-# Create the B move.
-cpB = [Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.UBR, Corner_Indices.DRB, Corner_Indices.DFR,
-       Corner_Indices.DLF, Corner_Indices.ULB, Corner_Indices.DBL]
-coB = [0, 0, 1, 2, 0, 0, 2, 1]
-epB = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.BR, Edge_Indices.DR, Edge_Indices.DF,
-       Edge_Indices.DL, Edge_Indices.BL, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.UB, Edge_Indices.DB]
-eoB = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
-
-# Initialise the moves as cubes.
-Umove = CubieCube(data=[cpU, coU, epU, eoU])
-Rmove = CubieCube(data=[cpR, coR, epR, eoR])
-Lmove = CubieCube(data=[cpL, coL, epL, eoL])
-Fmove = CubieCube(data=[cpF, coF, epF, eoF])
-Bmove = CubieCube(data=[cpB, coB, epB, eoB])
-Dmove = CubieCube(data=[cpD, coD, epD, eoD])
-
-__MOVES = [Umove,
-           Rmove,
-           Lmove,
-           Fmove,
-           Bmove,
-           Dmove]
-
-# Append moves to
-CubieCube.moves = __MOVES
