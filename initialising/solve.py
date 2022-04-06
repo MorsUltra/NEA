@@ -3,6 +3,8 @@ import queue
 from definitions.cubie_cube import CubieCube
 from initialising.table_init import Tables
 
+CubieCube.create_moves()
+
 
 class Solver:
     def __init__(self, cube):
@@ -11,7 +13,7 @@ class Solver:
         self.phase1_searcher = Phase1
         self.phase2_searcher = Phase2
 
-        self.cc_data = cube.to_data_arrary()
+        self.cc_data = cube.to_data_array()
 
         self.final_solutions = []
 
@@ -138,9 +140,9 @@ class Phase1(PhaseN):
         super().__init__(*args, **kwargs)
 
         # Initialising the first coordinates and costs using phase 1 coordinates.
-        self.coordinate1[0] = self.cube.Ocorner_coords
-        self.coordinate2[0] = self.cube.Oedge_coords
-        self.coordinate3[0] = self.cube.POSud_slice_coords
+        self.coordinate1[0] = self.cube.o_corner_coords
+        self.coordinate2[0] = self.cube.o_edge_coords
+        self.coordinate3[0] = self.cube.pos_udslice_coords
 
         self.h_costs[0] = self.h(0)  # Get cost of starting position
 
@@ -228,9 +230,9 @@ class Phase2(PhaseN):
         super().__init__(*args, **kwargs)
 
         # Initialising the first coordinates and costs using phase 1 coordinates.
-        self.coordinate1[0] = self.cube.P4edge_coords
-        self.coordinate2[0] = self.cube.Pcorner_coords
-        self.coordinate3[0] = self.cube.P8edge_coords
+        self.coordinate1[0] = self.cube.p_4edge_coords
+        self.coordinate2[0] = self.cube.p_corner_coords
+        self.coordinate3[0] = self.cube.p_8edge_coords
 
         self.h_costs[0] = self.h(0)  # Get cost of starting position
 

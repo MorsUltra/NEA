@@ -11,8 +11,10 @@ from pygame.locals import *
 from GUI.pygame_facelets import load_facelets as load
 from definitions.cubedefs import URF_Facelet_Indices
 from definitions.cubie_cube import CubieCube
-from definitions.facelet_cube import Facelet_Cube
+from definitions.facelet_cube import FaceletCube
 from initialising.solve import Solver
+
+CubieCube.create_moves()
 
 screen_width = 1920
 screen_height = 1080
@@ -226,8 +228,8 @@ class Cube:
     def __init__(self, static=False, scaling=1, cc=None,
                  show_all=False, solve=False):
 
-        self.cubiecube = CubieCube(data=cc.to_data_arrary()) if cc else CubieCube()
-        self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
+        self.cubiecube = CubieCube(data=cc.to_data_array()) if cc else CubieCube()
+        self.string = self.cubiecube.to_facelet_string(FaceletCube())
         self.convert_string_int()
         self.scaling = scaling
         self.x_constant = -1
@@ -257,7 +259,7 @@ class Cube:
 
     def clean(self, cc=None):
         self.cubiecube = cc if cc else CubieCube()
-        self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
+        self.string = self.cubiecube.to_facelet_string(FaceletCube())
         self.convert_string_int()
         self.moves = []
         self.power = []
@@ -328,14 +330,14 @@ class Cube:
     def move(self, moves, power):
         self.moves += moves
         self.power += power
-        self.cubiecube.MOVE_arr(moves, power)
+        self.cubiecube.apply_move_array(moves, power)
 
-        self.string = self.cubiecube.to_facelet_string((Facelet_Cube()))
+        self.string = self.cubiecube.to_facelet_string((FaceletCube()))
         self.convert_string_int()
 
     def shuffle(self):
         self.cubiecube.shuffle()
-        self.string = self.cubiecube.to_facelet_string(Facelet_Cube())
+        self.string = self.cubiecube.to_facelet_string(FaceletCube())
         self.convert_string_int()
 
     def dynamic_draw(self):
@@ -851,8 +853,8 @@ def input_cube_screen():
 
         fc_string = Square.collect_values()
         if None not in fc_string:
-            fc = Facelet_Cube("".join([axis_converter[i] for i in
-                                       fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
+            fc = FaceletCube("".join([axis_converter[i] for i in
+                                      fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
             cc = fc.to_cubie_cube(CubieCube())
             if fc.verify() == 1 and cc.verify() == 1:
                 b.set(True)
@@ -867,8 +869,8 @@ def input_cube_screen():
 
             if collect_facelets.is_pressed(mx, my):
                 if b.b:
-                    fc = Facelet_Cube("".join([axis_converter[i] for i in
-                                               fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
+                    fc = FaceletCube("".join([axis_converter[i] for i in
+                                              fc_string]))  # TODO need to have facelet cube work with numbers instead of letters
                     cc = fc.to_cubie_cube(CubieCube())
                     return cc
 
@@ -1049,8 +1051,8 @@ def generate():
             elif scramble_cube.is_pressed(mx, my):
                 cc.clean()  # this is replacign cube, no more reference to old cube
                 scramble(cc, int(cnt.get_size()))
-                print(cc.cubiecube.Pcorner_coords, cc.cubiecube.Ocorner_coords, cc.cubiecube.Pedge_coords,
-                      cc.cubiecube.Oedge_coords)
+                print(cc.cubiecube.p_corner_coords, cc.cubiecube.o_corner_coords, cc.cubiecube.p_edge_coords,
+                      cc.cubiecube.o_edge_coords)
                 print(cc.get_text_scramble())
             elif solve_cube.is_pressed(mx,
                                        my):  # these should be in button implementations somehow - how do you pass arguements with buttons?

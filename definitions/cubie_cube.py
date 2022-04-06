@@ -1,8 +1,7 @@
 from functools import reduce
-from math import comb as CNK
+from math import comb as binomial_coefficient_calculator
 from random import randint
-from definitions.moves import MOVES
-from typing import Type
+from definitions.moves import *
 
 from definitions.cubedefs import *
 
@@ -12,7 +11,7 @@ class CubieCube:
     CubieCube class to handle cube based on it's cubies and coordinates.
     """
 
-
+    MOVES = []
     # Set corner values to create parity.
     __Ocorner_parity_value = [0, 2, 1]
 
@@ -23,7 +22,21 @@ class CubieCube:
         self.eo = data[3] if data else [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         if moves:
-            self.MOVE_arr(*moves)
+            self.apply_move_array(*moves)
+
+    @staticmethod
+    def create_moves():
+        """
+        Class method to create the moves before the CubieCube class is handled.
+
+        """
+
+        CubieCube.MOVES = [CubieCube(data=[cpU, coU, epU, eoU]),
+                           CubieCube(data=[cpR, coR, epR, eoR]),
+                           CubieCube(data=[cpL, coL, epL, eoL]),
+                           CubieCube(data=[cpF, coF, epF, eoF]),
+                           CubieCube(data=[cpB, coB, epB, eoB]),
+                           CubieCube(data=[cpD, coD, epD, eoD])]
 
     def is_solved(self) -> bool:
         """
@@ -32,7 +45,7 @@ class CubieCube:
         :return: True if solved; False if not solved.
         """
 
-        if self.to_data_arrary() == (
+        if self.to_data_array() == (
                 [0, 1, 2, 3, 4, 5, 6, 7],
                 [0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -54,7 +67,7 @@ class CubieCube:
         else:
             return 1
 
-    def to_data_arrary(self) -> tuple[list, list, list, list]:
+    def to_data_array(self) -> tuple[list, list, list, list]:
         """
         Function to get the data of the cube in terms of its arrays of cubies.
 
@@ -101,19 +114,19 @@ class CubieCube:
         """
 
         # Pick random corner orientation and edge coordinates - the two are perfectly independent until permutation.
-        self.Ocorner_coords = randint(0, 2186)
-        self.Oedge_coords = randint(0, 2047)
+        self.o_corner_coords = randint(0, 2186)
+        self.o_edge_coords = randint(0, 2047)
 
         # Find a combination of corner and edge permutations that is valid.
         while True:
-            self.Pcorner_coords = randint(0, 40319)
-            self.Pedge_coords = randint(0, 479001599)
+            self.p_corner_coords = randint(0, 40319)
+            self.p_edge_coords = randint(0, 479001599)
             if self.edge_parity != self.corner_parity:
                 continue
             else:
                 break
 
-    def MOVE_arr(self, moves: list, powers: list):
+    def apply_move_array(self, moves: list, powers: list):
         """
         Method to apply a sequence of moves to the cube.
 
@@ -123,35 +136,79 @@ class CubieCube:
 
         for i, move in enumerate(moves):
             for power in range(powers[i]):
-                self.MOVE(MOVES[move])
+                self.apply_move(self.MOVES[move])
 
-    def MOVE(self, to_apply: object):
+    def apply_move(self, to_apply: object):
         """
         Method to apply a move to the cube.
 
         :param to_apply: The move, in cube form, to be applied to the cube.
         """
-        self.Cmove(to_apply)
-        self.Emove(to_apply)
+        self.corner_move(to_apply)
+        self.edge_move(to_apply)
 
-    def Cmove(self, to_apply):
-        self.cp = [self.cp[to_apply.cp[i]] for i in range(8)]
+    def corner_move(self, to_apply: object):
+        """
+        Method to apply move to the corners only.
+
+        :param to_apply: The move to apply in cube form.
+        """
+
+        # Apply the move to corner permutation.
+        self.corner_permutation_move(to_apply)
+        # Apply the move to the corner orientation.
+        self.corner_orientation_move(to_apply)
+
+    def corner_orientation_move(self, to_apply: object):
+        """
+        Method to apply move to the corner orientation only.
+
+        :param to_apply: The move to apply in cube form.
+        """
+
+        # Apply the move to the corner orientation.
         self.co = [(self.co[to_apply.cp[i]] + to_apply.co[i]) % 3 for i in range(8)]
 
-    def COmove(self, to_apply):
-        self.co = [(self.co[to_apply.cp[i]] + to_apply.co[i]) % 3 for i in range(8)]
+    def corner_permutation_move(self, to_apply: object):
+        """
+        Method to apply move to the corner permutation only.
 
-    def CPmove(self, to_apply):
+        :param to_apply: The move to apply in cube form.
+        """
+
+        # Apply the move to corner permutation.
         self.cp = [self.cp[to_apply.cp[i]] for i in range(8)]
 
-    def Emove(self, to_apply):
-        self.ep = [self.ep[to_apply.ep[i]] for i in range(12)]
+    def edge_move(self, to_apply: object):
+        """
+        Method to apply move to the edges only.
+
+        :param to_apply: The move to apply in cube form.
+        """
+
+        # Apply move to edge permutation.
+        self.edge_permutation_move(to_apply)
+        # Apply move to edge orientation.
+        self.edge_orientation_move(to_apply)
+
+    def edge_orientation_move(self, to_apply: object):
+        """
+        Method to apply move to edge orientation only.
+
+        :param to_apply: The move to apply in cube form
+        """
+
+        # Apply move to edge orientation.
         self.eo = [(self.eo[to_apply.ep[i]] + to_apply.eo[i]) % 2 for i in range(12)]
 
-    def EOmove(self, to_apply):
-        self.eo = [(self.eo[to_apply.ep[i]] + to_apply.eo[i]) % 2 for i in range(12)]
+    def edge_permutation_move(self, to_apply: object):
+        """
+        Method to apply move to edge permutation.
 
-    def EPmove(self, to_apply):
+        :param to_apply: The move to apply in cube form.
+        """
+
+        # Apply the move to edge permutation.
         self.ep = [self.ep[to_apply.ep[i]] for i in range(12)]
 
     @property
@@ -174,7 +231,7 @@ class CubieCube:
         return parity % 2
 
     @property
-    def Ocorner_coords(self) -> int:
+    def o_corner_coords(self) -> int:
         """
         Getter function for corner orientation coordinate.
         
@@ -185,8 +242,8 @@ class CubieCube:
 
         return co
 
-    @Ocorner_coords.setter
-    def Ocorner_coords(self, index: int):
+    @o_corner_coords.setter
+    def o_corner_coords(self, index: int):
         """
         Setter function for corner orientation coordinates. Takes an index and changes the cube's corner orientation
         to reflect that coordinate.
@@ -206,7 +263,7 @@ class CubieCube:
         self.co[7] = self.__Ocorner_parity_value[sum(self.co) % 3]
 
     @property
-    def Pcorner_coords(self) -> int:
+    def p_corner_coords(self) -> int:
         """
         Getter function for corner permutation coordinate.
 
@@ -225,8 +282,8 @@ class CubieCube:
 
         return index
 
-    @Pcorner_coords.setter
-    def Pcorner_coords(self, index: int):
+    @p_corner_coords.setter
+    def p_corner_coords(self, index: int):
         """
         Algorithm to set the permutation of corners of the coordinate between 0-40319.
 
@@ -257,13 +314,13 @@ class CubieCube:
         self.cp[0] = corners[0]
 
     @property
-    def Oedge_coords(self):  # working
+    def o_edge_coords(self):  # working
         eo = reduce(lambda variable_base, total: 2 * variable_base + total, self.eo[:11])
 
         return eo
 
-    @Oedge_coords.setter
-    def Oedge_coords(self, index: int):
+    @o_edge_coords.setter
+    def o_edge_coords(self, index: int):
         """
         Algorithm to produce binary number of index range 2047 (2^11 - 1).
 
@@ -278,7 +335,7 @@ class CubieCube:
         self.eo[11] = sum(self.eo) % 2
 
     @property
-    def Pedge_coords(self) -> int:
+    def p_edge_coords(self) -> int:
         """
         Getter function for the corner permutation coordinate.
         
@@ -297,8 +354,8 @@ class CubieCube:
 
         return index
 
-    @Pedge_coords.setter
-    def Pedge_coords(self, index: int):
+    @p_edge_coords.setter
+    def p_edge_coords(self, index: int):
         """
         Function to set the permutation of the edges based off of the coordinate between 0-479001599 (12! - 1)
 
@@ -331,7 +388,7 @@ class CubieCube:
     # ---------------------------------------------------------
 
     @property
-    def P8edge_coords(self) -> int:
+    def p_8edge_coords(self) -> int:
         """
         Getter function for the 8-edge permutation coordinate.
 
@@ -350,8 +407,8 @@ class CubieCube:
 
         return index
 
-    @P8edge_coords.setter
-    def P8edge_coords(self, index: int):
+    @p_8edge_coords.setter
+    def p_8edge_coords(self, index: int):
         """
         Function to set the permutation of the edges based off of the coordinate between 0 --> 40319 (8! - 1).
 
@@ -382,7 +439,7 @@ class CubieCube:
         self.ep[0] = edges[0]
 
     @property
-    def P4edge_coords(self) -> int:
+    def p_4edge_coords(self) -> int:
         """
         Getter function for the UD-slice edge permutation coordinate.
 
@@ -404,8 +461,8 @@ class CubieCube:
 
         return index
 
-    @P4edge_coords.setter
-    def P4edge_coords(self, index: int):
+    @p_4edge_coords.setter
+    def p_4edge_coords(self, index: int):
         """
         Function to set the permutation of the UD-slice edge permutation based off of the coordinate between 0 --> 23
         (4! - 1).
@@ -434,7 +491,7 @@ class CubieCube:
         self.ep[8] = edges[0]
 
     @property
-    def POSud_slice_coords(self) -> int:
+    def pos_udslice_coords(self) -> int:
         """
         Algorithm to get the UD-slice coordinate of the current edge permutation.
 
@@ -458,12 +515,12 @@ class CubieCube:
                 pieces_remaining -= 1
             else:
                 # Add to running total the number of combinations that do not have a piece here.
-                coordinate += CNK(i, pieces_remaining - 1)
+                coordinate += binomial_coefficient_calculator(i, pieces_remaining - 1)
 
         return coordinate
 
-    @POSud_slice_coords.setter
-    def POSud_slice_coords(self, index: int):
+    @pos_udslice_coords.setter
+    def pos_udslice_coords(self, index: int):
         """
         Algorithm to set the position of the UD-slice coordinate from index 0-494.
 
@@ -482,13 +539,13 @@ class CubieCube:
             # If there are no pieces left to place.
             if not pieces_remaining:
                 # Fill in the other edges if some have yet to have been checked.
-                for unchecked in range(i + 1):
-                    self.ep[unchecked] = other_edges
+                for j in range(i + 1):
+                    self.ep[j] = other_edges
                     other_edges += 1
                 break
 
             # Find the number of combinations of the remaining pieces that have a piece at position i.
-            possible_combinations = CNK(i, pieces_remaining - 1)
+            possible_combinations = binomial_coefficient_calculator(i, pieces_remaining - 1)
 
             # If the index is a part of one of those combinations.
             if index < possible_combinations:

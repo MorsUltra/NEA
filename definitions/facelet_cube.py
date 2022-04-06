@@ -1,9 +1,8 @@
 # Import all the default pieces.
 from definitions.cubedefs import *
-from definitions.cubie_cube import CubieCube
 
 
-class Facelet_Cube:
+class FaceletCube:
     """
     Lowest level of data structure involved in Two-Phase Algorithm. It deals primarily in colours and operates on the
     basis of stickers or "facelets".
@@ -76,7 +75,7 @@ class Facelet_Cube:
 
         return edges
 
-    def to_cubie_cube(self, cc: CubieCube):
+    def to_cubie_cube(self, cc: object):
         """
         Function to convert FaceletCube into CubieCube
 

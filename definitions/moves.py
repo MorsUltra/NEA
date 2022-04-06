@@ -1,5 +1,4 @@
 from definitions.cubedefs import *
-from definitions.cubie_cube import CubieCube
 
 # Create the U move.
 cpU = [Corner_Indices.UBR, Corner_Indices.URF, Corner_Indices.UFL, Corner_Indices.ULB, Corner_Indices.DFR,
@@ -48,19 +47,3 @@ coB = [0, 0, 1, 2, 0, 0, 2, 1]
 epB = [Edge_Indices.UR, Edge_Indices.UF, Edge_Indices.UL, Edge_Indices.BR, Edge_Indices.DR, Edge_Indices.DF,
        Edge_Indices.DL, Edge_Indices.BL, Edge_Indices.FR, Edge_Indices.FL, Edge_Indices.UB, Edge_Indices.DB]
 eoB = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
-
-
-# Initialise the moves as cubes.
-Umove = CubieCube(data=[cpU, coU, epU, eoU])
-Rmove = CubieCube(data=[cpR, coR, epR, eoR])
-Lmove = CubieCube(data=[cpL, coL, epL, eoL])
-Fmove = CubieCube(data=[cpF, coF, epF, eoF])
-Bmove = CubieCube(data=[cpB, coB, epB, eoB])
-Dmove = CubieCube(data=[cpD, coD, epD, eoD])
-
-MOVES = [Umove,
-         Rmove,
-         Lmove,
-         Fmove,
-         Bmove,
-         Dmove]

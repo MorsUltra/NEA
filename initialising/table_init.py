@@ -2,7 +2,9 @@ import os
 
 import numpy as np
 
-from definitions.cubie_cube import *
+from definitions.cubie_cube import CubieCube
+
+CubieCube.create_moves()
 
 
 class Tables:
@@ -16,12 +18,7 @@ class Tables:
     NO_P4edge_coords = 24
     NO_P8edge_coords = 40320
 
-    moves = [Umove,
-             Rmove,
-             Lmove,
-             Fmove,
-             Bmove,
-             Dmove]
+    moves = CubieCube.MOVES
 
     save_file_name = r"\Pruning tables.npz"
 
@@ -119,15 +116,15 @@ class Tables:
             # For every one of the 6 possible moves.
             for i, move in enumerate(self.moves):
                 # Set the cube to that permutation.
-                cc.Ocorner_coords = coord
+                cc.o_corner_coords = coord
                 # For every power of each move.
                 for power in range(3):
                     # Apply the move, concerning only the orientation of the corners and ignore the permutation to
                     # save time.
-                    cc.COmove(move)
+                    cc.corner_orientation_move(move)
                     # Record which corner orientation coordinates the permutation is mapped to by the move. Abstract
                     # out every other piece of data.
-                    template[coord][(3 * i) + power] = cc.Ocorner_coords
+                    template[coord][(3 * i) + power] = cc.o_corner_coords
 
         # Load the table into memory.
         self.Ocorner_table = template
@@ -138,10 +135,10 @@ class Tables:
 
         for coord in range(self.NO_Oedge_coords):
             for i, move in enumerate(self.moves):
-                cc.Oedge_coords = coord
+                cc.o_edge_coords = coord
                 for power in range(3):
-                    cc.EOmove(move)
-                    template[coord][(3 * i) + power] = cc.Oedge_coords
+                    cc.edge_orientation_move(move)
+                    template[coord][(3 * i) + power] = cc.o_edge_coords
 
         self.Oedge_table = template
 
@@ -151,10 +148,10 @@ class Tables:
 
         for coord in range(self.NO_POSud_slice_coords):
             for i, move in enumerate(self.moves):
-                cc.POSud_slice_coords = coord
+                cc.pos_udslice_coords = coord
                 for power in range(3):
-                    cc.EPmove(move)
-                    template[coord][(3 * i) + power] = cc.POSud_slice_coords
+                    cc.edge_permutation_move(move)
+                    template[coord][(3 * i) + power] = cc.pos_udslice_coords
 
         self.POSud_slice_table = template
 
@@ -217,13 +214,13 @@ class Tables:
 
         for coord in range(self.NO_Pcorner_coords):
             for i, move in enumerate(self.moves):
-                cc.Pcorner_coords = coord
+                cc.p_corner_coords = coord
                 for power in range(3):
-                    cc.CPmove(move)
+                    cc.corner_permutation_move(move)
                     if power != 1 and i % 5 != 0:
                         template[coord][(3 * i) + power] = -1
                     else:
-                        template[coord][(3 * i) + power] = cc.Pcorner_coords
+                        template[coord][(3 * i) + power] = cc.p_corner_coords
 
         self.Pcorner_table = template
 
@@ -235,13 +232,13 @@ class Tables:
         # for other faces, power must be 1 or not at all
         for coord in range(self.NO_P8edge_coords):
             for i, move in enumerate(self.moves):
-                cc.P8edge_coords = coord
+                cc.p_8edge_coords = coord
                 for power in range(3):
-                    cc.EPmove(move)
+                    cc.edge_permutation_move(move)
                     if power != 1 and i % 5 != 0:
                         template[coord][(3 * i) + power] = -1
                     else:
-                        template[coord][(3 * i) + power] = cc.P8edge_coords
+                        template[coord][(3 * i) + power] = cc.p_8edge_coords
         self.P8edge_table = template
 
     def create_P4edge_table(self):
@@ -252,13 +249,13 @@ class Tables:
         # for other faces, power must be 1 or not at all
         for coord in range(self.NO_P4edge_coords):
             for i, move in enumerate(self.moves):
-                cc.P4edge_coords = coord
+                cc.p_4edge_coords = coord
                 for power in range(3):
-                    cc.EPmove(move)
+                    cc.edge_permutation_move(move)
                     if power != 1 and i % 5 != 0:
                         template[coord][(3 * i) + power] = -1
                     else:
-                        template[coord][(3 * i) + power] = cc.P4edge_coords
+                        template[coord][(3 * i) + power] = cc.p_4edge_coords
         self.P4edge_table = template
 
     # Phase 2 pruning tables
